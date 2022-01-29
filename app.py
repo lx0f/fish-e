@@ -1,15 +1,41 @@
 # TODO : create login logic
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 from flask_bootstrap import Bootstrap5
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, EmailField
 from wtforms.validators import DataRequired, Length
 
-SECRET_KEY = "secret_key"
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = SECRET_KEY
+app.config["SECRET_KEY"] = "secret"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 Bootstrap5(app)
+db = SQLAlchemy(app)
+
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    profile_image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
+    password = db.Column(db.String(60), nullable=False)
+    # items = db.relationship("Item", backref='author', lazy=True)
+
+    def __repr__(self):
+        return f"User('{self.username}','{self.email}','{self.profile_image_file}')"
+
+
+# NOTE : see issue #25
+# class Item(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey("user.id", nullable=False))
+#     name = db.Column(db.String(100), nullable=False)
+#     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+#     base_price = db.Column(db.Float)
 
 
 class LoginForm(FlaskForm):
@@ -32,8 +58,11 @@ class ForgetForm(FlaskForm):
 
 
 class SearchForm(FlaskForm):
-    search = StringField(validators=[DataRequired()], render_kw={"placeholder":"Enter Search"})
+    search = StringField(
+        validators=[DataRequired()], render_kw={"placeholder": "Enter Search"}
+    )
     submit = SubmitField("Search")
+
 
 @app.route("/")
 def render_landing():
