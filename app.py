@@ -1,4 +1,5 @@
 # TODO : create login logic
+from crypt import methods
 from flask import Flask, render_template, request, jsonify
 from flask_bootstrap import Bootstrap5
 from flask_wtf import FlaskForm
@@ -17,6 +18,9 @@ class LoginForm(FlaskForm):
     remember = BooleanField("Remember me")
     submit = SubmitField()
 
+class RegisterForm(FlaskForm):
+    pass
+
 @app.route("/")
 def render_landing():
     return render_template("index.html")
@@ -25,6 +29,14 @@ def render_landing():
 def render_login():
     if request.method == "GET":
         return render_template("login.html", form=LoginForm())
+    elif request.method == "POST":
+        data = request.form
+        return jsonify(data)
+
+@app.route("/register", methods=["GET", "POST"])
+def render_register():
+    if request.method == "GET":
+        return render_template("register.html", form=RegisterForm())
     elif request.method == "POST":
         data = request.form
         return jsonify(data)
