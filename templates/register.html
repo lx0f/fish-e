@@ -1,6 +1,23 @@
-{% from 'bootstrap/form.html' import render_form %}
+{% from 'bootstrap5/form.html' import render_form %}
 {% extends 'base.html' %}
 {% block title %}register{% endblock title %}
 {% block content %}
-<h1>register page</h1>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 py-5 primary">
+        </div>
+    </div>
+    <div class="row py-5">
+        <div class="col-md-3"></div>
+        <div class="col-md-6 border">
+            <h3>Ready to dive deep?</h3>
+            {{ render_form(form) }}
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 py-5 secondary">
+        </div>
+    </div>
+</div>
 {% endblock content %}
