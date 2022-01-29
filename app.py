@@ -23,6 +23,11 @@ class RegisterForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired(), Length(8, 150)])
     submit = SubmitField("Register")
 
+class ForgetForm(FlaskForm):
+    email = EmailField("Email", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+
 @app.route("/")
 def render_landing():
     return render_template("index.html")
@@ -39,6 +44,14 @@ def render_login():
 def render_register():
     if request.method == "GET":
         return render_template("register.html", form=RegisterForm())
+    elif request.method == "POST":
+        data = request.form
+        return jsonify(data)
+
+@app.route("/forget", methods=["GET", "POST"])
+def render_forget():
+    if request.method == "GET":
+        return render_template("forget.html", form=ForgetForm())
     elif request.method == "POST":
         data = request.form
         return jsonify(data)
