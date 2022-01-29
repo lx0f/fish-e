@@ -11,11 +11,13 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = SECRET_KEY
 Bootstrap5(app)
 
+
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(1, 20)])
     password = PasswordField("Password", validators=[DataRequired(), Length(8, 150)])
     remember = BooleanField("Remember me")
     submit = SubmitField("Login")
+
 
 class RegisterForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(1, 20)])
@@ -23,14 +25,20 @@ class RegisterForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired(), Length(8, 150)])
     submit = SubmitField("Register")
 
+
 class ForgetForm(FlaskForm):
     email = EmailField("Email", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
 
+class SearchForm(FlaskForm):
+    search = StringField(validators=[DataRequired()], render_kw={"placeholder":"Enter Search"})
+    submit = SubmitField("Search")
+
 @app.route("/")
 def render_landing():
     return render_template("index.html")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def render_login():
@@ -40,6 +48,7 @@ def render_login():
         data = request.form
         return jsonify(data)
 
+
 @app.route("/register", methods=["GET", "POST"])
 def render_register():
     if request.method == "GET":
@@ -48,6 +57,7 @@ def render_register():
         data = request.form
         return jsonify(data)
 
+
 @app.route("/forget", methods=["GET", "POST"])
 def render_forget():
     if request.method == "GET":
@@ -55,6 +65,12 @@ def render_forget():
     elif request.method == "POST":
         data = request.form
         return jsonify(data)
+
+
+@app.route("/home")
+def render_home():
+    return render_template("home.html", form=SearchForm())
+
 
 if __name__ == "__main__":
     app.run(debug=True)

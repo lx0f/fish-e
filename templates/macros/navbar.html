@@ -1,0 +1,28 @@
+{% macro navbar(form, profile_url="https://mdbcdn.b-cdn.net/img/new/avatars/2.webp") %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/home"><img src="" alt="Insert Fish E logo"></a>
+        <form class="d-flex" action="/search" method="get">
+            {{ form.csrf_token }}
+            {{ form.search(class_="form-control me-2") }}
+            {{ form.submit(class_="btn btn-primary") }}
+        </form>
+        <div class="d-flex row">
+            <div class="col">
+                <a href="/items"><button class="btn btn-primary">Items</button></a>
+            </div>
+            <div class="col">
+                <a href="/likes"><button class="btn btn-primary">Likes</button></a>
+            </div>
+            <div class="col">
+                <a href="/chats"><button class="btn btn-primary">Chats</button></a>
+            </div>
+            <!-- NOTE: avatar picture aspect ratio has to be 1:1-->
+            <!-- default profile picture: https://mdbcdn.b-cdn.net/img/new/avatars/2.webp -->
+            <div class="col">
+                <a href=""><img src="{{ profile_url }}" alt="pfp" class="rounded-circle" width="38px"></a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endmacro %}
