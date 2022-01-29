@@ -1,8 +1,13 @@
-from distutils.log import debug
-from flask import Flask
+from flask import Flask, render_template
+from flask_bootstrap import Bootstrap5
 
 
 app = Flask(__name__)
+Bootstrap5(app)
+
+@app.route("/")
+def render_landing():
+    return render_template("index.html")
 
 
 if __name__ == "__main__":
