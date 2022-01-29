@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, jsonify
 from flask_bootstrap import Bootstrap5
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, EmailField
 from wtforms.validators import DataRequired, Length
 
 SECRET_KEY = "secret_key"
@@ -15,7 +15,13 @@ class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(1, 20)])
     password = PasswordField("Password", validators=[DataRequired(), Length(8, 150)])
     remember = BooleanField("Remember me")
-    submit = SubmitField()
+    submit = SubmitField("Login")
+
+class RegisterForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired(), Length(1, 20)])
+    email = EmailField("Email", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired(), Length(8, 150)])
+    submit = SubmitField("Register")
 
 @app.route("/")
 def render_landing():
@@ -25,6 +31,14 @@ def render_landing():
 def render_login():
     if request.method == "GET":
         return render_template("login.html", form=LoginForm())
+    elif request.method == "POST":
+        data = request.form
+        return jsonify(data)
+
+@app.route("/register", methods=["GET", "POST"])
+def render_register():
+    if request.method == "GET":
+        return render_template("register.html", form=RegisterForm())
     elif request.method == "POST":
         data = request.form
         return jsonify(data)
