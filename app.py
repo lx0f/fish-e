@@ -31,6 +31,10 @@ class ForgetForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
+class SearchForm(FlaskForm):
+    search = StringField(validators=[DataRequired()], render_kw={"placeholder":"Enter Search"})
+    submit = SubmitField("Search")
+
 @app.route("/")
 def render_landing():
     return render_template("index.html")
@@ -65,7 +69,7 @@ def render_forget():
 
 @app.route("/home")
 def render_home():
-    return render_template("home.html")
+    return render_template("home.html", form=SearchForm())
 
 
 if __name__ == "__main__":

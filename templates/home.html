@@ -1,12 +1,10 @@
+{% from 'macros/navbar.html' import navbar %}
 {% extends 'base.html' %}
 {% block title %}home{% endblock title %}
 {% block content %}
+<!-- NAVBAR -->
+{{ navbar(form) }}
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <!-- NAVBAR -->
-        </div>
-    </div>
     <div class="row">
         <div class="col-md-12">
             <!-- CATEGORY -->
