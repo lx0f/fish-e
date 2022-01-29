@@ -9,6 +9,9 @@ Bootstrap5(app)
 def render_landing():
     return render_template("index.html")
 
+@app.route("/login")
+def render_login():
+    return render_template("login.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
