@@ -1,12 +1,12 @@
 # TODO : create login logic
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_bootstrap import Bootstrap5
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, EmailField
+from wtforms import (BooleanField, EmailField, PasswordField, StringField,
+                     SubmitField)
 from wtforms.validators import DataRequired, Length, ValidationError
-
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret"
@@ -51,12 +51,12 @@ class RegisterForm(FlaskForm):
     submit = SubmitField("Register")
 
     def validate_username(self, username):
-        user = User.query.filter_by(username=username.data)
+        user = User.query.filter_by(username=username.data).first()
         if user:
             raise ValidationError("That username is taken. Please choose a different one.")
 
     def validate_email(self, email):
-        user = User.query.filter_by(email=email.data)
+        user = User.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError("That email is taken. Please choose a different one.")
 
@@ -86,6 +86,15 @@ def render_login():
 @app.route("/register", methods=["GET", "POST"])
 def render_register():
     form = RegisterForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        email = form.email.data
+        password = form.password.data
+        user = User(username=username, email=email, password=password)
+        db.session().add(user)
+        db.session().commit()
+        return redirect("login")
+
     return render_template("register.html", form=form)
 
 
