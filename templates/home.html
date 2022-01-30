@@ -1,4 +1,5 @@
 {% from 'macros/navbar.html' import navbar %}
+{% from 'macros/my_likes.html' import my_likes %}
 {% extends 'base.html' %}
 {% block title %}home{% endblock title %}
 {% block content %}
@@ -10,9 +11,12 @@
             <!-- CATEGORY -->
         </div>
     </div>
-    <div class="row">
+    <div class="row mx-5">
         <div class="col-md-12">
             <!-- MY LIKES -->
+            {% if current_user.is_authenticated %}
+            {{ my_likes(current_user) }}
+            {% endif %}
         </div>
     </div>
     <div class="row">
