@@ -1,5 +1,5 @@
 <!-- TODO : make sure navbar content changes based on user -->
-{% macro navbar(form, profile_url="https://mdbcdn.b-cdn.net/img/new/avatars/2.webp") %}
+{% macro navbar(form, current_user) %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="/home"><img src="" alt="Insert Fish E logo"></a>
@@ -9,6 +9,7 @@
             {{ form.submit(class_="btn btn-primary") }}
         </form>
         <div class="d-flex row">
+            {% if current_user.is_authenticated %}
             <div class="col">
                 <a href="/items"><button class="btn btn-primary">Items</button></a>
             </div>
@@ -18,11 +19,23 @@
             <div class="col">
                 <a href="/chats"><button class="btn btn-primary">Chats</button></a>
             </div>
+            <div class="col">
+                <a href="/logout"><button class="btn btn-primary">Logout</button></a>
+            </div>
             <!-- NOTE: avatar picture aspect ratio has to be 1:1-->
             <!-- default profile picture: https://mdbcdn.b-cdn.net/img/new/avatars/2.webp -->
             <div class="col">
-                <a href=""><img src="{{ profile_url }}" alt="pfp" class="rounded-circle" width="38px"></a>
+                <a href=""><img src="https://mdbcdn.b-cdn.net/img/new/avatars/2.webp" alt="pfp" class="rounded-circle"
+                        width="38px"></a>
             </div>
+            {% else %}
+            <div class="col">
+                <a href="/login"><button class="btn btn-primary">Login</button></a>
+            </div>
+            <div class="col">
+                <a href="/register"><button class="btn btn-primary">Register</button></a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </nav>

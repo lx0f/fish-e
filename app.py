@@ -1,19 +1,24 @@
 # TODO : create login logic
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, flash, jsonify, redirect, render_template, request
 from flask_bootstrap import Bootstrap5
-from flask_login import UserMixin
+from flask_login import UserMixin, LoginManager, login_user, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from wtforms import (BooleanField, EmailField, PasswordField, StringField,
-                     SubmitField)
+from wtforms import BooleanField, EmailField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, ValidationError
 
 app = Flask(__name__)
+Bootstrap5(app)
 app.config["SECRET_KEY"] = "secret"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-Bootstrap5(app)
 db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 class User(db.Model, UserMixin):
@@ -43,6 +48,16 @@ class LoginForm(FlaskForm):
     remember = BooleanField("Remember me")
     submit = SubmitField("Login")
 
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user and (user.password != self.password.data):
+            raise ValidationError("Wrong Username or Password. Please check again.")
+
+    def validate_password(self, password):
+        user = User.query.filter_by(username=self.username.data).first()
+        if user and (user.password != password.data):
+            raise ValidationError("Wrong Username or Password. Please check again.")
+
 
 class RegisterForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(1, 20)])
@@ -53,12 +68,15 @@ class RegisterForm(FlaskForm):
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user:
-            raise ValidationError("That username is taken. Please choose a different one.")
+            raise ValidationError(
+                "That username is taken. Please choose a different one."
+            )
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError("That email is taken. Please choose a different one.")
+
 
 class ForgetForm(FlaskForm):
     email = EmailField("Email", validators=[DataRequired()])
@@ -79,12 +97,21 @@ def render_landing():
 
 @app.route("/login", methods=["GET", "POST"])
 def render_login():
+    if current_user.is_authenticated:
+        return redirect("home")
     form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user and (user.password == form.password.data):
+            login_user(user, remember=form.remember.data)
+            return redirect("home")
     return render_template("login.html", form=form)
 
 
 @app.route("/register", methods=["GET", "POST"])
 def render_register():
+    if current_user.is_authenticated:
+        return redirect("home")
     form = RegisterForm()
     if form.validate_on_submit():
         username = form.username.data
@@ -110,6 +137,11 @@ def render_forget():
 @app.route("/home")
 def render_home():
     return render_template("home.html", form=SearchForm())
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect("home")
 
 
 if __name__ == "__main__":
