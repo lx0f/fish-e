@@ -1,5 +1,6 @@
 {% from 'macros/navbar.html' import navbar %}
 {% from 'macros/my_likes.html' import my_likes %}
+{% from 'macros/featured_items.html' import featured_items %}
 {% extends 'base.html' %}
 {% block title %}home{% endblock title %}
 {% block content %}
@@ -19,9 +20,11 @@
             {% endif %}
         </div>
     </div>
-    <div class="row">
+    <div class="row mx-5">
         <div class="col-md-12">
             <!-- FEATURED ITEMS -->
+
+            {{ featured_items(items) }}
         </div>
     </div>
     <div class="row">
