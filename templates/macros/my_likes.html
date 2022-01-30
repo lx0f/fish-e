@@ -1,0 +1,19 @@
+{% from 'macros/item_card.html' import item_card %}
+{% macro my_likes(current_user) %}
+<div class="row">
+    <div class="col">
+        <div class="row">
+            <div class="col">
+                <h1>My Likes</h1>
+            </div>
+        </div>
+        <div class="row">
+            {% for item in current_user.liked %}
+            <div class="col">
+                {{ item_card(item) }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}

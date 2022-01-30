@@ -1,0 +1,19 @@
+{% from 'macros/item_card.html' import item_card %}
+{% macro featured_items(items) %}
+<div class="row">
+    <div class="col">
+        <div class="row">
+            <div class="col">
+                <h1>Featured Items</h1>
+            </div>
+        </div>
+        <div class="row">
+            {% for item in items %}
+            <div class="col">
+                {{ item_card(item) }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
