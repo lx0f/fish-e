@@ -29,12 +29,29 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
     password = db.Column(db.String(60), nullable=False)
     items = db.relationship("Item", backref="author", lazy=True)
+    liked = db.relationship(
+        "ItemLike", foreign_keys="PostLike.user_id", backref="user", lazy="dynamic"
+    )
 
     def __repr__(self):
         return f"User(username = '{self.username}', email = '{self.email}', image_file = '{self.image_file}')"
 
+    def like_item(self, item):
+        if not self.has_liked_item(item):
+            like = ItemLike(user_id=self.id, item_id=item.id)
+            db.session.add(like)
 
-# NOTE : see issue #25
+    def unlike_item(self, item):
+        if self.has_liked_item(item):
+            ItemLike.query.filter_by(user_id=self.id, item_id=item.id).delete()
+
+    def has_liked_item(self, item):
+        return (
+            ItemLike.query.filter(
+                ItemLike.user_id == self.id, ItemLike.item_id == item.id
+            ).count() > 0)
+
+
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -43,9 +60,16 @@ class Item(db.Model):
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     base_price = db.Column(db.Float, nullable=False)
     image_file = db.Column(db.String(200), nullable=False)
+    likes = db.relationship("PostLike", backref="item", lazy="dynamic")
 
     def __repr__(self):
         return f"Item(name = '{self.name}', date_posted = '{self.date_posted}', image_file = '{self.image_file}')"
+
+
+class ItemLike(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    item_id = db.Column(db.Integer, db.ForeignKey("item.id"))
 
 
 class LoginForm(FlaskForm):
@@ -149,6 +173,17 @@ def render_home():
 def logout():
     logout_user()
     return redirect("home")
+
+@app.route("/like/<int:item_id>/<action>")
+def like_action(item_id, action):
+    item = Item.query.filter_by(id=item_id).first()
+    if action == "like":
+        current_user.like_item(item)
+        db.session.commit()
+    if action == "unlike":
+        current_user.unlike_item(item)
+        db.session.commit()
+    return redirect(request.referrer)
 
 
 if __name__ == "__main__":
