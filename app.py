@@ -1,13 +1,12 @@
 # TODO : create login logic
-from datetime import datetime
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_bootstrap import Bootstrap5
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, EmailField
-from wtforms.validators import DataRequired, Length
-
+from wtforms import (BooleanField, EmailField, PasswordField, StringField,
+                     SubmitField)
+from wtforms.validators import DataRequired, Length, ValidationError
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret"
@@ -51,6 +50,15 @@ class RegisterForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired(), Length(8, 150)])
     submit = SubmitField("Register")
 
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError("That username is taken. Please choose a different one.")
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError("That email is taken. Please choose a different one.")
 
 class ForgetForm(FlaskForm):
     email = EmailField("Email", validators=[DataRequired()])
@@ -71,20 +79,23 @@ def render_landing():
 
 @app.route("/login", methods=["GET", "POST"])
 def render_login():
-    if request.method == "GET":
-        return render_template("login.html", form=LoginForm())
-    elif request.method == "POST":
-        data = request.form
-        return jsonify(data)
+    form = LoginForm()
+    return render_template("login.html", form=form)
 
 
 @app.route("/register", methods=["GET", "POST"])
 def render_register():
-    if request.method == "GET":
-        return render_template("register.html", form=RegisterForm())
-    elif request.method == "POST":
-        data = request.form
-        return jsonify(data)
+    form = RegisterForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        email = form.email.data
+        password = form.password.data
+        user = User(username=username, email=email, password=password)
+        db.session().add(user)
+        db.session().commit()
+        return redirect("login")
+
+    return render_template("register.html", form=form)
 
 
 @app.route("/forget", methods=["GET", "POST"])
