@@ -1,0 +1,11 @@
+{% macro item_card(item) %}
+<div class="card">
+    <img src="" alt="insert item image">
+    <div class="card-body">
+        <h5 class="card-title">{{ item.name }}</h5>
+        <p class="card-text">{{ item.description }}</p>
+        <!-- TODO : make the href change dynamically -->
+        <a href="/item/{{ item.id }}" class="btn btn-primary">Details</a>
+    </div>
+</div>
+{% endmacro %}

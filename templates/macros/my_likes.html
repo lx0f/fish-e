@@ -1,3 +1,4 @@
+{% from 'macros/item_card.html' import item_card %}
 {% macro my_likes(current_user) %}
 <div class="row">
     <div class="col">
@@ -8,37 +9,13 @@
         </div>
         <div class="row">
             <div class="col">
-                <div class="card">
-                    <img src="" alt="insert item image">
-                    <div class="card-body">
-                        <h5 class="card-title">Insert Item Name</h5>
-                        <p class="card-text">Insert Item Description</p>
-                        <!-- TODO : make the href change dynamically -->
-                        <a href="#" class="btn btn-primary">Details</a>
-                    </div>
-                </div>
+                <!-- {{ item_card(item) }} -->
             </div>
             <div class="col">
-                <div class="card">
-                    <img src="" alt="insert item image">
-                    <div class="card-body">
-                        <h5 class="card-title">Insert Item Name</h5>
-                        <p class="card-text">Insert Item Description</p>
-                        <!-- TODO : make the href change dynamically -->
-                        <a href="#" class="btn btn-primary">Details</a>
-                    </div>
-                </div>
+                <!-- {{ item_card(item) }} -->
             </div>
             <div class="col">
-                <div class="card">
-                    <img src="" alt="insert item image">
-                    <div class="card-body">
-                        <h5 class="card-title">Insert Item Name</h5>
-                        <p class="card-text">Insert Item Description</p>
-                        <!-- TODO : make the href change dynamically -->
-                        <a href="#" class="btn btn-primary">Details</a>
-                    </div>
-                </div>
+                <!-- {{ item_card(item) }} -->
             </div>
         </div>
     </div>
