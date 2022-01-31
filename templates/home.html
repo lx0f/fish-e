@@ -17,20 +17,20 @@
         <div class="col-md-12">
             <!-- MY LIKES -->
             {% if current_user.is_authenticated %}
-            {{ my_likes(l_items) }}
+            {{ my_likes(l_items, current_user) }}
             {% endif %}
         </div>
     </div>
     <div class="row mx-5">
         <div class="col-md-12">
             <!-- FEATURED ITEMS -->
-            {{ featured_items(f_items) }}
+            {{ featured_items(f_items, current_user) }}
         </div>
     </div>
     <div class="row mx-5">
         <div class="col-md-12">
             <!-- RECCOMENDED -->
-            {{ reccommended_items(r_items) }}
+            {{ reccommended_items(r_items, current_user) }}
         </div>
     </div>
 </div>
