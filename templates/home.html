@@ -17,7 +17,7 @@
         <div class="col-md-12">
             <!-- MY LIKES -->
             {% if current_user.is_authenticated %}
-            {{ my_likes(current_user) }}
+            {{ my_likes(l_items) }}
             {% endif %}
         </div>
     </div>
