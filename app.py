@@ -45,6 +45,21 @@ class User(db.Model, UserMixin):
     reviewed = db.relationship("Review", foreign_keys="Review.recipient_id", backref="getter", lazy=True)
     liked = db.relationship("ItemLike", foreign_keys="ItemLike.user_id", backref="user", lazy=True)
 
+    @property
+    def ratings(self):
+        return len(self.reviewed)
+
+    @property
+    def rating(self):
+        total = 0
+        reviews = self.reviewed
+        if reviews:
+            for review in reviews:
+                total += review.rating
+            average = total / len(self.reviewed)
+            return "{:.1f}".format(average)
+        return "No reviews yet"
+
     def __repr__(self):
         return f"User(username = '{self.username}', email = '{self.email}', image_file = '{self.image_file}')"
 
