@@ -1,35 +1,57 @@
-{% from 'includes/_navbar.html' import navbar %} {% extends 'base.html' %} {%
-block title %}home{% endblock title %} {% block content %}
+{% from 'macros/navbar.html' import navbar %}
+{% from 'macros/reccommended_items.html' import reccommended_items %}
+{% extends 'base.html' %} {%
+block title %}home{% endblock title %}
+{% block content %}
+{{ navbar(form, current_user) }}
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
-            <!-- NAVBAR -->
-            <h1>Navbar</h1>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <!-- ITEM IMAGE -->
-            <h1>Item Image</h1>
+            <img src="{{ url_for('static', filename='img/' + item.image_file) }}" alt="insert image"
+                style="object-fit: cover; width: 100%; height: 300px;">
         </div>
     </div>
     <div class="row">
         <div class="col-md-8">
             <div class="row">
-                <div class="col-md-8">
-                    <!-- ITEM BRIEF DESCRIPTION -->
-                    <h1>Item Brief Description</h1>
-                </div>
-                <div class="col-md-8">
-                    <!-- ITEM IN DEPTH DESCRIPTION -->
-                    <h1>Item In Depth Description</h1>
+                <div class="col">
+                    <div class="card">
+                        <!-- ITEM BRIEF DESCRIPTION -->
+                        <div class="row">
+                            <div class="col">
+                                <h3>{{ item.name }}</h3>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <h3>Base price: ${{ item.base_price }}</h3>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <h6>Posted on {{ item.date_posted }}</h3>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="row"></div>
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <!-- ITEM IN DEPTH DESCRIPTION -->
+                        <h3>Description</h3>
+                        <p>{{ item.description }}</p>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-md-4">
-            <!-- BID AND MESSAGE -->
-            <h1>Bid and Message</h1>
+            <div class="card" style="height: 100%;">
+                <!-- BID AND MESSAGE -->
+                <!-- ONLY IMPLEMENTING VENDOR INFO AND BID FUNCTION -->
+                <h1>{{ vendor.username }}</h1>
+                <!-- TODO : add reviews logic -->
+            </div>
         </div>
     </div>
     <div class="row">
@@ -45,7 +67,7 @@ block title %}home{% endblock title %} {% block content %}
     <div class="row">
         <div class="col-md-12">
             <!-- SIMILAR ITEMS -->
-            <h1>Similar Items</h1>
+            {{ reccommended_items(r_items, current_user) }}
         </div>
     </div>
 </div>

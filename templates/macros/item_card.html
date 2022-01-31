@@ -1,12 +1,12 @@
 {% macro item_card(item, current_user) %}
 <div class="card">
-    <img src="static/img/{{ item.image_file }}" alt="insert image"
+    <img src="{{ url_for('static', filename='img/' + item.image_file) }}" alt="insert image"
         style="display: block; max-width: 100%; height: auto;">
     <div class="card-body">
         <h5 class="card-title">{{ item.name }}</h5>
         <p class="card-text">{{ item.description }}</p>
         <!-- TODO : make the href change dynamically -->
-        <a href="#" class="btn btn-primary">Details</a>
+        <a href="/item/{{ item.id }}" class="btn btn-primary">Details</a>
         {% if current_user.is_authenticated %}
         {% if not current_user.has_liked_item(item) %}
         <a href="{{ url_for('like_action', item_id=item.id, action='like') }}" class="btn btn-primary">Like</a>
