@@ -1,4 +1,4 @@
-{% macro item_card(item) %}
+{% macro item_card(item, has_liked) %}
 <div class="card">
     <img src="static/img/{{ item.image_file }}" alt="insert image"
         style="display: block; max-width: 100%; height: auto;">
@@ -7,7 +7,11 @@
         <p class="card-text">{{ item.description }}</p>
         <!-- TODO : make the href change dynamically -->
         <a href="#" class="btn btn-primary">Details</a>
+        {% if not has_liked %}
         <a href="{{ url_for('like_action', item_id=item.id, action='like') }}" class="btn btn-primary">Like</a>
+        {% else %}
+        <a href="{{ url_for('like_action', item_id=item.id, action='unlike') }}" class="btn btn-primary">Unlike</a>
+        {% endif %}
     </div>
 </div>
 {% endmacro %}

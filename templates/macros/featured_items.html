@@ -1,5 +1,5 @@
 {% from 'macros/item_card.html' import item_card %}
-{% macro featured_items(items) %}
+{% macro featured_items(items, current_user) %}
 <div class="row">
     <div class="col">
         <div class="row">
@@ -10,7 +10,7 @@
         <div class="row">
             {% for item in items %}
             <div class="col">
-                {{ item_card(item) }}
+                {{ item_card(item, current_user.has_liked_item(item)) }}
             </div>
             {% endfor %}
         </div>
