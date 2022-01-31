@@ -34,7 +34,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(60), nullable=False)
     items = db.relationship("Item", backref="author", lazy=True)
     liked = db.relationship(
-        "ItemLike", foreign_keys="ItemLike.user_id", backref="user", lazy="dynamic"
+        "ItemLike", foreign_keys="ItemLike.user_id", backref="user", lazy=True
     )
 
     def __repr__(self):
@@ -64,7 +64,7 @@ class Item(db.Model):
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     base_price = db.Column(db.Float, nullable=False)
     image_file = db.Column(db.String(200), nullable=False)
-    likes = db.relationship("ItemLike", backref="item", lazy="dynamic")
+    likes = db.relationship("ItemLike", backref="item", lazy=True)
 
     def __repr__(self):
         return f"Item(name = '{self.name}', date_posted = '{self.date_posted}', image_file = '{self.image_file}')"
@@ -74,6 +74,9 @@ class ItemLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     item_id = db.Column(db.Integer, db.ForeignKey("item.id"))
+
+    def __repr__(self):
+        return f"ItemLike(user_id={self.user_id}, item_id={self.item_id})"
 
 
 class LoginForm(FlaskForm):
@@ -174,7 +177,12 @@ def render_home():
     # NOTE : pretend r_items is a long list of reccomended items
     r_items = items + items
     f_items = items
-    return render_template("home.html", f_items=f_items, r_items=r_items, form=SearchForm())
+    l_items = []
+    if current_user.is_authenticated:
+        for like in current_user.liked:
+            item = Item.query.filter_by(id=like.item_id).first()
+            l_items.append(item)
+    return render_template("home.html", f_items=f_items, r_items=r_items, l_items=l_items, form=SearchForm())
 
 
 @app.route("/logout")
