@@ -2,7 +2,14 @@
 from datetime import datetime
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_bootstrap import Bootstrap5
-from flask_login import UserMixin, LoginManager, login_required, login_user, current_user, logout_user
+from flask_login import (
+    UserMixin,
+    LoginManager,
+    login_required,
+    login_user,
+    current_user,
+    logout_user,
+)
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, EmailField, PasswordField, StringField, SubmitField
@@ -21,6 +28,7 @@ login_manager = LoginManager(app)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     return redirect(url_for("render_login"))
@@ -33,9 +41,9 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
     password = db.Column(db.String(60), nullable=False)
     items = db.relationship("Item", backref="author", lazy=True)
-    liked = db.relationship(
-        "ItemLike", foreign_keys="ItemLike.user_id", backref="user", lazy=True
-    )
+    reviews = db.relationship("Review", foreign_keys="Review.user_id", backref="author", lazy=True)
+    reviewed = db.relationship("Review", foreign_keys="Review.recipient_id", backref="getter", lazy=True)
+    liked = db.relationship("ItemLike", foreign_keys="ItemLike.user_id", backref="user", lazy=True)
 
     def __repr__(self):
         return f"User(username = '{self.username}', email = '{self.email}', image_file = '{self.image_file}')"
@@ -53,7 +61,9 @@ class User(db.Model, UserMixin):
         return (
             ItemLike.query.filter(
                 ItemLike.user_id == self.id, ItemLike.item_id == item.id
-            ).count() > 0)
+            ).count()
+            > 0
+        )
 
 
 class Item(db.Model):
@@ -69,6 +79,15 @@ class Item(db.Model):
     def __repr__(self):
         return f"Item(name = '{self.name}', date_posted = '{self.date_posted}', image_file = '{self.image_file}')"
 
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    comment = db.Column(db.String(500), nullable=False)
+
+    def __repr__(self):
+        return f"Review(user_id={self.user_id}), recipient_id={self.recipient_id}, rating={self.rating}, comment='{self.comment}')"
 
 class ItemLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -173,6 +192,7 @@ def render_forget():
 
 @app.route("/home")
 def render_home():
+    form = SearchForm()
     items = Item.query.limit(4).all()
     # NOTE : pretend r_items is a long list of reccomended items
     r_items = items + items
@@ -182,13 +202,29 @@ def render_home():
         for like in current_user.liked:
             item = Item.query.filter_by(id=like.item_id).first()
             l_items.append(item)
-    return render_template("home.html", f_items=f_items, r_items=r_items, l_items=l_items, form=SearchForm())
+    return render_template(
+        "home.html",
+        f_items=f_items,
+        r_items=r_items,
+        l_items=l_items,
+        form=form,
+    )
 
+
+@app.route("/item/<int:item_id>")
+def render_item(item_id):
+    r_items = Item.query.limit(4).all()
+    form = SearchForm()
+    item = Item.query.filter_by(id=item_id).first()
+    vendor = User.query.filter_by(id=item.user_id).first()
+    if item:
+        return render_template("item.html", form=form, item=item, vendor=vendor, r_items=r_items)
 
 @app.route("/logout")
 def logout():
     logout_user()
     return redirect("home")
+
 
 @app.route("/like/<int:item_id>/<action>")
 @login_required
