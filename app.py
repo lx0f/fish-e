@@ -41,9 +41,9 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
     password = db.Column(db.String(60), nullable=False)
     items = db.relationship("Item", backref="author", lazy=True)
-    liked = db.relationship(
-        "ItemLike", foreign_keys="ItemLike.user_id", backref="user", lazy=True
-    )
+    reviews = db.relationship("Review", foreign_keys="Review.user_id", backref="author", lazy=True)
+    reviewed = db.relationship("Review", foreign_keys="Review.recipient_id", backref="getter", lazy=True)
+    liked = db.relationship("ItemLike", foreign_keys="ItemLike.user_id", backref="user", lazy=True)
 
     def __repr__(self):
         return f"User(username = '{self.username}', email = '{self.email}', image_file = '{self.image_file}')"
@@ -79,6 +79,15 @@ class Item(db.Model):
     def __repr__(self):
         return f"Item(name = '{self.name}', date_posted = '{self.date_posted}', image_file = '{self.image_file}')"
 
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    comment = db.Column(db.String(500), nullable=False)
+
+    def __repr__(self):
+        return f"Review(user_id={self.user_id}), recipient_id={self.recipient_id}, rating={self.rating}, comment='{self.comment}')"
 
 class ItemLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
