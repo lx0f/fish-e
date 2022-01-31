@@ -1,6 +1,7 @@
 {% from 'macros/navbar.html' import navbar %}
 {% from 'macros/my_likes.html' import my_likes %}
 {% from 'macros/featured_items.html' import featured_items %}
+{% from 'macros/reccommended_items.html' import reccommended_items %}
 {% extends 'base.html' %}
 {% block title %}home{% endblock title %}
 {% block content %}
@@ -23,13 +24,13 @@
     <div class="row mx-5">
         <div class="col-md-12">
             <!-- FEATURED ITEMS -->
-
-            {{ featured_items(items) }}
+            {{ featured_items(f_items) }}
         </div>
     </div>
-    <div class="row">
+    <div class="row mx-5">
         <div class="col-md-12">
             <!-- RECCOMENDED -->
+            {{ reccommended_items(r_items) }}
         </div>
     </div>
 </div>

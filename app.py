@@ -171,7 +171,10 @@ def render_forget():
 @app.route("/home")
 def render_home():
     items = Item.query.limit(4).all()
-    return render_template("home.html", items=items, form=SearchForm())
+    # NOTE : pretend r_items is a long list of reccomended items
+    r_items = items + items
+    f_items = items
+    return render_template("home.html", f_items=f_items, r_items=r_items, form=SearchForm())
 
 
 @app.route("/logout")
