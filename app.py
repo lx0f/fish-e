@@ -1,4 +1,3 @@
-# TODO : create login logic
 from datetime import datetime
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_bootstrap import Bootstrap5
@@ -15,6 +14,9 @@ from flask_wtf import FlaskForm
 from wtforms import BooleanField, EmailField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, ValidationError
 
+
+######## APP INIT ########
+
 app = Flask(__name__)
 Bootstrap5(app)
 app.config["SECRET_KEY"] = "secret"
@@ -22,6 +24,9 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
+
+
+######## LOGIN MANAGER ########
 
 
 @login_manager.user_loader
@@ -34,6 +39,9 @@ def unauthorized_callback():
     return redirect(url_for("render_login"))
 
 
+######## MODELS ########
+
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
@@ -41,9 +49,15 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
     password = db.Column(db.String(60), nullable=False)
     items = db.relationship("Item", backref="author", lazy=True)
-    reviews = db.relationship("Review", foreign_keys="Review.user_id", backref="author", lazy=True)
-    reviewed = db.relationship("Review", foreign_keys="Review.recipient_id", backref="getter", lazy=True)
-    liked = db.relationship("ItemLike", foreign_keys="ItemLike.user_id", backref="user", lazy=True)
+    reviews = db.relationship(
+        "Review", foreign_keys="Review.user_id", backref="author", lazy=True
+    )
+    reviewed = db.relationship(
+        "Review", foreign_keys="Review.recipient_id", backref="getter", lazy=True
+    )
+    liked = db.relationship(
+        "ItemLike", foreign_keys="ItemLike.user_id", backref="user", lazy=True
+    )
 
     @property
     def ratings(self):
@@ -94,6 +108,7 @@ class Item(db.Model):
     def __repr__(self):
         return f"Item(name = '{self.name}', date_posted = '{self.date_posted}', image_file = '{self.image_file}')"
 
+
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -104,6 +119,7 @@ class Review(db.Model):
     def __repr__(self):
         return f"Review(user_id={self.user_id}), recipient_id={self.recipient_id}, rating={self.rating}, comment='{self.comment}')"
 
+
 class ItemLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -111,6 +127,9 @@ class ItemLike(db.Model):
 
     def __repr__(self):
         return f"ItemLike(user_id={self.user_id}, item_id={self.item_id})"
+
+
+######## FORMS ########
 
 
 class LoginForm(FlaskForm):
@@ -159,6 +178,9 @@ class SearchForm(FlaskForm):
         validators=[DataRequired()], render_kw={"placeholder": "Enter Search"}
     )
     submit = SubmitField("Search")
+
+
+######## ROUTES ########
 
 
 @app.route("/")
@@ -233,7 +255,10 @@ def render_item(item_id):
     item = Item.query.filter_by(id=item_id).first()
     vendor = User.query.filter_by(id=item.user_id).first()
     if item:
-        return render_template("item.html", form=form, item=item, vendor=vendor, r_items=r_items)
+        return render_template(
+            "item.html", form=form, item=item, vendor=vendor, r_items=r_items
+        )
+
 
 @app.route("/logout")
 def logout():
