@@ -1,3 +1,4 @@
+# @redears-lambda TODO: create dummy items, transactions, and likes
 from datetime import datetime
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_bootstrap import Bootstrap5
@@ -49,6 +50,12 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
     password = db.Column(db.String(60), nullable=False)
     items = db.relationship("Item", backref="author", lazy=True)
+    transactions = db.relationship(
+        "Transaction", foreign_keys="Transaction.user_id", backref="buyer", lazy=True
+    )
+    sold = db.relationship(
+        "Transaction", foreign_keys="Transaction.vendor_id", backref="seller", lazy=True
+    )
     reviews = db.relationship(
         "Review", foreign_keys="Review.user_id", backref="author", lazy=True
     )
@@ -75,7 +82,7 @@ class User(db.Model, UserMixin):
         return "No reviews yet"
 
     def __repr__(self):
-        return f"User(username = '{self.username}', email = '{self.email}', image_file = '{self.image_file}')"
+        return f"User(username='{self.username}',email='{self.email}',image_file='{self.image_file}')"
 
     def like_item(self, item):
         if not self.has_liked_item(item):
@@ -102,8 +109,11 @@ class Item(db.Model):
     description = db.Column(db.String(500), nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     base_price = db.Column(db.Float, nullable=False)
-    image_file = db.Column(db.String(200), nullable=False)
+    image_file = db.Column(db.String(200), nullable=False, default="default.jpg")
     likes = db.relationship("ItemLike", backref="item", lazy=True)
+    status = db.Column(
+        db.String(10), nullable=False, default="available"
+    )  # "available" or "sold"
 
     def __repr__(self):
         return f"Item(name='{self.name}',date_posted='{self.date_posted}',image_file='{self.image_file}')"
