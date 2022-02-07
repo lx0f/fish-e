@@ -106,7 +106,7 @@ class Item(db.Model):
     likes = db.relationship("ItemLike", backref="item", lazy=True)
 
     def __repr__(self):
-        return f"Item(name = '{self.name}', date_posted = '{self.date_posted}', image_file = '{self.image_file}')"
+        return f"Item(name='{self.name}',date_posted='{self.date_posted}',image_file='{self.image_file}')"
 
 
 class Review(db.Model):
@@ -117,16 +117,28 @@ class Review(db.Model):
     comment = db.Column(db.String(500), nullable=False)
 
     def __repr__(self):
-        return f"Review(user_id={self.user_id}), recipient_id={self.recipient_id}, rating={self.rating}, comment='{self.comment}')"
+        return f"Review(user_id={self.user_id}),recipient_id={self.recipient_id},rating={self.rating},comment='{self.comment}')"
 
 
 class ItemLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    item_id = db.Column(db.Integer, db.ForeignKey("item.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey("item.id"), nullable=False)
 
     def __repr__(self):
-        return f"ItemLike(user_id={self.user_id}, item_id={self.item_id})"
+        return f"ItemLike(user_id={self.user_id},item_id={self.item_id})"
+
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey("item.id"), nullable=False)
+    vendor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    value = db.Column(db.Float, nullable=False)
+    date_transacted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"Transaction(user_id={self.user_id},vendor_id={self.vendor_id},item_id={self.item_id},value={self.value},date_transacted='{self.date_transacted}')"
 
 
 ######## FORMS ########
