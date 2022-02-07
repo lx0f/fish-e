@@ -1,3 +1,2 @@
-# fish - e: dyka
-
-give me 1 week
+# fish - e: ressurected
+two weeks to finish
