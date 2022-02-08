@@ -30,7 +30,7 @@ block title %}home{% endblock title %}
                         </div>
                         <div class="row">
                             <div class="col">
-                                <h6>Posted on {{ item.date_posted }}</h3>
+                                <h6>Posted on {{ item.date_posted.date() }}</h3>
                             </div>
                         </div>
                     </div>
@@ -53,18 +53,12 @@ block title %}home{% endblock title %}
                 <h1>{{ vendor.username }}</h1>
                 <h4>Rating: {{ vendor.rating }}</h4>
                 <p>({{ vendor.ratings }} reviews)</p>
+                <p>({{ v_sold_count }} items sold)</p>
             </div>
         </div>
     </div>
     <div class="row my-1 mx-5 g-3">
-        <div class="col-md-4">
-            <div class="card" style="height: 100%;">
-                <!-- VENDOR OVERVIEW -->
-                <h1>Vendor Overview</h1>
-                <h4>Sold: {{ v_sold_count }}</h4>
-            </div>
-        </div>
-        <div class="col-md-8">
+        <div class="col-md-12">
             <div class="card" style="height: 100%;">
                 <!-- VENDOR REVIEWS -->
                 <h1>Vendor Reviews</h1>
