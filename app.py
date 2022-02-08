@@ -276,9 +276,10 @@ def render_item(item_id):
     form = SearchForm()
     item = Item.query.filter_by(id=item_id).first()
     vendor = User.query.filter_by(id=item.user_id).first()
+    v_sold_count = len(vendor.sold)
     if item:
         return render_template(
-            "item.html", form=form, item=item, vendor=vendor, r_items=r_items
+            "item.html", form=form, item=item, vendor=vendor, r_items=r_items, v_sold_count=v_sold_count
         )
 
 
