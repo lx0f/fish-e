@@ -123,11 +123,12 @@ class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.String(500), nullable=False)
 
     def __repr__(self):
-        return f"Review(user_id={self.user_id}),recipient_id={self.recipient_id},rating={self.rating},comment='{self.comment}')"
+        return f"Review(user_id={self.user_id},recipient_id={self.recipient_id},rating={self.rating},comment='{self.comment}')"
 
 
 class ItemLike(db.Model):
@@ -277,9 +278,12 @@ def render_item(item_id):
     item = Item.query.filter_by(id=item_id).first()
     vendor = User.query.filter_by(id=item.user_id).first()
     v_sold_count = len(vendor.sold)
+    reviews=vendor.reviewed[:4]
+    review_authors = [User.query.filter_by(id=review.user_id).first() for review in reviews]
+    reviews = list(zip(review_authors, reviews))
     if item:
         return render_template(
-            "item.html", form=form, item=item, vendor=vendor, r_items=r_items, v_sold_count=v_sold_count
+            "item.html", form=form, item=item, vendor=vendor, r_items=r_items, v_sold_count=v_sold_count, reviews=reviews
         )
 
 
