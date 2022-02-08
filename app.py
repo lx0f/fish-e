@@ -115,6 +115,10 @@ class Item(db.Model):
         db.String(10), nullable=False, default="available"
     )  # "available" or "sold"
 
+    @property
+    def price(self):
+        return "{:.2f}".format(self.base_price)
+
     def __repr__(self):
         return f"Item(name='{self.name}',date_posted='{self.date_posted}',image_file='{self.image_file}')"
 
