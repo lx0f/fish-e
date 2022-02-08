@@ -1,21 +1,22 @@
 {% from 'macros/navbar.html' import navbar %}
 {% from 'macros/reccommended_items.html' import reccommended_items %}
+{% from 'macros/render_review.html' import render_review %}
 {% extends 'base.html' %} {%
 block title %}home{% endblock title %}
 {% block content %}
 {{ navbar(form, current_user) }}
 <div class="container-fluid">
-    <div class="row">
+    <div class="row mb-3 mx-5">
         <div class="col-md-12">
             <img src="{{ url_for('static', filename='img/' + item.image_file) }}" alt="insert image"
                 style="object-fit: cover; width: 100%; height: 300px;">
         </div>
     </div>
-    <div class="row">
+    <div class="row g-3 mx-5">
         <div class="col-md-8">
             <div class="row">
                 <div class="col">
-                    <div class="card">
+                    <div class="card" style="height: 100%;">
                         <!-- ITEM BRIEF DESCRIPTION -->
                         <div class="row">
                             <div class="col">
@@ -24,23 +25,26 @@ block title %}home{% endblock title %}
                         </div>
                         <div class="row">
                             <div class="col">
-                                <h3>Base price: ${{ item.base_price }}</h3>
+                                <h3>Price: ${{ item.price }}</h3>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col">
-                                <h6>Posted on {{ item.date_posted }}</h3>
+                                <h6>Posted on {{ item.date_posted.date() }}</h3>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <!-- ITEM IN DEPTH DESCRIPTION -->
-                        <h3>Description</h3>
-                        <p>{{ item.description }}</p>
+                        <div class="row">
+                            <div class="col">
+                                <!-- ITEM IN DEPTH DESCRIPTION -->
+                                <h3>Description</h3>
+                                <p>{{ item.description }}</p>
+                            </div>
+                            <div class="col">
+                                <span style="position: absolute; bottom: 0; right: 0;">
+                                    <a href="/buy/{{ item.id }}"><button class="btn btn-primary m-2">Buy</button></a>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -50,24 +54,33 @@ block title %}home{% endblock title %}
                 <!-- BID AND MESSAGE -->
                 <!-- ONLY IMPLEMENTING VENDOR INFO AND BID FUNCTION -->
                 <h1>{{ vendor.username }}</h1>
-                <!-- TODO : add reviews logic -->
+                <h4>Rating: {{ vendor.rating }}</h4>
+                <p>({{ vendor.ratings }} reviews)</p>
+                <p>({{ v_sold_count }} items sold)</p>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-4">
-            <!-- VENDOR OVERVIEW -->
-            <h1>Vendor Overview</h1>
-        </div>
-        <div class="col-md-8">
-            <!-- VENDOR REVIEWS -->
-            <h1>Vendor Reviews</h1>
+    <div class="row my-1 mx-5 g-3">
+        <div class="col-md-12">
+            <div class="card" style="height: 100%;">
+                <!-- VENDOR REVIEWS -->
+                <h1>Vendor Reviews</h1>
+                {% if reviews %}
+                {% for review in reviews %}
+                {{ render_review(review) }}
+                {% endfor %}
+                {% else %}
+                <p>No reviews yet</p>
+                {% endif %}
+            </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12">
-            <!-- SIMILAR ITEMS -->
-            {{ reccommended_items(r_items, current_user) }}
+    <div class="row my-3 mx-5">
+        <div class="col-md-12 p-2">
+            <div class="card">
+                <!-- SIMILAR ITEMS -->
+                {{ reccommended_items(r_items, current_user) }}
+            </div>
         </div>
     </div>
 </div>

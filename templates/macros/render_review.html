@@ -1,0 +1,8 @@
+{% macro render_review(review) %}
+<div class="card mb-3 mx-3">
+    <h4>{{ review[0].username }} (rated {{ review[1].rating }}/5) <small class="text-muted">posted on {{
+            review[1].date_posted.date() }}</small>
+    </h4>
+    <p>{{ review[1].comment }}</p>
+</div>
+{% endmacro %}
