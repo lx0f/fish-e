@@ -12,7 +12,15 @@ from flask_login import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, EmailField, PasswordField, StringField, SubmitField
+from wtforms import (
+    BooleanField,
+    EmailField,
+    PasswordField,
+    StringField,
+    SubmitField,
+    IntegerField,
+    SelectField,
+)
 from wtforms.validators import DataRequired, Length, ValidationError
 
 
@@ -207,6 +215,25 @@ class SearchForm(FlaskForm):
     submit = SubmitField("Search")
 
 
+class PaymentForm(FlaskForm):
+    MONTHS = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+    YEARS = [str(i) for i in range(2023, 2031)]
+    name = StringField(
+        "Name",
+        validators=[DataRequired()],
+        render_kw={"placeholder": "Enter your name"},
+    )
+    credit_number = StringField(
+        "Credit Card",
+        validators=[DataRequired(), Length(16)],
+        render_kw={"placeholder": "0000 0000 0000 0000"},
+    )
+    month = SelectField("Expiry Month", validators=[DataRequired()], choices=MONTHS)
+    year = SelectField("Expiry Year", validators=[DataRequired()], choices=YEARS)
+    cvv = IntegerField("CVV", validators=[DataRequired(3)])
+    submit = SubmitField("Enter")
+
+
 ######## ROUTES ########
 
 
@@ -282,26 +309,35 @@ def render_item(item_id):
     item = Item.query.filter_by(id=item_id).first()
     vendor = User.query.filter_by(id=item.user_id).first()
     v_sold_count = len(vendor.sold)
-    reviews=vendor.reviewed[:4]
-    review_authors = [User.query.filter_by(id=review.user_id).first() for review in reviews]
+    reviews = vendor.reviewed[:4]
+    review_authors = [
+        User.query.filter_by(id=review.user_id).first() for review in reviews
+    ]
     reviews = list(zip(review_authors, reviews))
     if item:
         return render_template(
-            "item.html", form=form, item=item, vendor=vendor, r_items=r_items, v_sold_count=v_sold_count, reviews=reviews
+            "item.html",
+            form=form,
+            item=item,
+            vendor=vendor,
+            r_items=r_items,
+            v_sold_count=v_sold_count,
+            reviews=reviews,
         )
+
+
+@app.route("/buy/<int:item_id>")
+@login_required
+def render_buy(item_id):
+    search_form = SearchForm()
+    form = PaymentForm()
+    return render_template("buy.html", search_form=search_form, form=form)
 
 
 @app.route("/logout")
 def logout():
     logout_user()
     return redirect("home")
-
-@app.route("/buy/<int:item_id>")
-@login_required
-def buy_item(item_id):
-    search_form = SearchForm()
-    form = PaymentForm()
-    return render_template("buy.html", search_form=search_form, form=form)
 
 
 @app.route("/like/<int:item_id>/<action>")
