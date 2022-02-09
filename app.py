@@ -296,6 +296,13 @@ def logout():
     logout_user()
     return redirect("home")
 
+@app.route("/buy/<int:item_id>")
+@login_required
+def buy_item(item_id):
+    search_form = SearchForm()
+    form = PaymentForm()
+    return render_template("buy.html", search_form=search_form, form=form)
+
 
 @app.route("/like/<int:item_id>/<action>")
 @login_required

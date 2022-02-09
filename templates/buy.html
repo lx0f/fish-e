@@ -1,0 +1,26 @@
+{% from 'bootstrap5/form.html' import render_form %}
+{% from 'macros/navbar.html' import navbar %}
+{% extends 'base.html' %}
+{% block title %}buy{% endblock title %}
+{% block content %}
+{{ navbar(form, current_user) }}
+<div class="padding d-flex justify-content-center">
+    <div class="col-sm-6">
+        <div class="card">
+            <div class="card-header">
+                <strong>Credit Card</strong>
+                <small>enter your card details</small>
+            </div>
+            <div class="card-body">
+                {{ render_form() }}
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-sm btn-success float-right" type="submit">
+                    <i class="mdi mdi-gamepad-circle"></i> Continue</button>
+                <button class="btn btn-sm btn-danger" type="reset">
+                    <i class="mdi mdi-lock-reset"></i> Reset</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
