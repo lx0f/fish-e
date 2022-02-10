@@ -359,6 +359,7 @@ def render_buy(item_id):
 
     return render_template("buy.html", search_form=search_form, form=form)
 
+
 @app.route("/likes")
 @login_required
 def render_likes():
@@ -370,7 +371,33 @@ def render_likes():
             item = Item.query.filter_by(id=like.item_id).first()
             l_items.append(item)
 
-    return render_template("likes.html", search_form=search_form, l_items=l_items, r_items=r_items)
+    return render_template(
+        "likes.html", search_form=search_form, l_items=l_items, r_items=r_items
+    )
+
+
+@app.route("/myitems")
+@login_required
+def render_my_likes():
+    search_form = SearchForm()
+    b_transactions = current_user.bought
+    b_items = [
+        Item.query.filter_by(id=transaction.item_id).first()
+        for transaction in b_transactions
+    ]
+    s_transactions = current_user.sold
+    s_items = [
+        Item.query.filter_by(id=transaction.item_id).first()
+        for transaction in s_transactions
+    ]
+    L_items = Item.query.filter_by(user_id=current_user.id, status="available").all()
+    return render_template(
+        "my_item.html",
+        search_form=search_form,
+        b_items=b_items,
+        s_items=s_items,
+        L_items=L_items,
+    )
 
 
 @app.route("/logout")
