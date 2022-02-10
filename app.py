@@ -58,7 +58,7 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
     password = db.Column(db.String(60), nullable=False)
     items = db.relationship("Item", backref="author", lazy=True)
-    transactions = db.relationship(
+    bought = db.relationship(
         "Transaction", foreign_keys="Transaction.user_id", backref="buyer", lazy=True
     )
     sold = db.relationship(
@@ -358,6 +358,19 @@ def render_buy(item_id):
         return redirect(url_for("render_home"))
 
     return render_template("buy.html", search_form=search_form, form=form)
+
+@app.route("/likes")
+@login_required
+def render_likes():
+    search_form = SearchForm()
+    l_items = []
+    r_items = Item.query.filter_by(status="available").limit(4).all()
+    if current_user.is_authenticated:
+        for like in current_user.liked:
+            item = Item.query.filter_by(id=like.item_id).first()
+            l_items.append(item)
+
+    return render_template("likes.html", search_form=search_form, l_items=l_items, r_items=r_items)
 
 
 @app.route("/logout")
