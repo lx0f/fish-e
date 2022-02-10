@@ -8,13 +8,14 @@
     <div class="col-sm-6">
         <div class="card">
             <div class="card-header">
-                <strong>Credit Card</strong>
+                <strong>Credit/Debit Card</strong>
                 <small>enter your card details</small>
             </div>
-            <form href="">
+            <form method="post">
+                {{ form.csrf_token() }}
                 <div class="card-body">
                     {{ render_field(form.name) }}
-                    {{ render_field(form.credit_number) }}
+                    {{ render_field(form.card_number) }}
                     {{ render_form_row([form.month, form.year, form.cvv]) }}
                 </div>
                 <div class="card-footer">
