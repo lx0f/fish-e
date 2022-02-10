@@ -5,8 +5,8 @@
 {% block title %}likes{% endblock title %}
 {% block content %}
 {{ navbar(search_form, current_user) }}
-<div class="container-fluid">
-    <div class="row">
+<div class="container">
+    <div class="row mx-5">
         <div class="col">
             {% if l_items %}
             {{ my_likes(l_items, current_user) }}

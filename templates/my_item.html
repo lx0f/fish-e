@@ -1,0 +1,26 @@
+{% from 'macros/navbar.html' import navbar %}
+{% from 'macros/base_items.html' import base_items %}
+{% extends 'base.html' %}
+{% block title %}items{% endblock title %}
+{% block content %}
+{{ navbar(search_form, current_user) }}
+<div class="container">
+    <div class="row mx-5">
+        <div class="col btn-group"><a href="/item/add" style="width: 100%;"><button class="btn btn-primary"
+                    style="width: 100%;">Add Item</button></a></div>
+        <div class="col btn-group"><a href="/analytics" style="width: 100%"><button class="btn btn-primary"
+                    style="width: 100%;">See Analytics</button></a></div>
+    </div>
+    <div class="row mx-5">
+        {{ base_items("My Items", L_items, current_user) }}
+    </div>
+    <div class="row mx-5">
+        <!-- INSERT BOUGHT ITEMS HERE -->
+        {{ base_items("Bought Items", b_items, current_user) }}
+    </div>
+    <div class="row mx-5">
+        <!-- INSERT SOLD ITEMS HEREV -->
+        {{ base_items("Sold Items", s_items, current_user) }}
+    </div>
+</div>
+{% endblock content %}
