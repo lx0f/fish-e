@@ -1,20 +1,28 @@
 # @redears-lambda TODO: create dummy items, transactions, and likes
 from datetime import datetime
+
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_bootstrap import Bootstrap5
 from flask_login import (
-    UserMixin,
     LoginManager,
+    UserMixin,
+    current_user,
     login_required,
     login_user,
-    current_user,
     logout_user,
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, EmailField, PasswordField, StringField, SubmitField
+from wtforms import (
+    BooleanField,
+    EmailField,
+    IntegerField,
+    PasswordField,
+    SelectField,
+    StringField,
+    SubmitField,
+)
 from wtforms.validators import DataRequired, Length, ValidationError
-
 
 ######## APP INIT ########
 
@@ -207,6 +215,25 @@ class SearchForm(FlaskForm):
     submit = SubmitField("Search")
 
 
+class PaymentForm(FlaskForm):
+    MONTHS = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+    YEARS = [str(i) for i in range(2023, 2031)]
+    name = StringField(
+        "Name",
+        validators=[DataRequired()],
+        render_kw={"placeholder": "Enter your name"},
+    )
+    card_number = StringField(
+        "Card",
+        validators=[DataRequired(), Length(16)],
+        render_kw={"placeholder": "0000 0000 0000 0000"},
+    )
+    month = SelectField("Expiry Month", validators=[DataRequired()], choices=MONTHS)
+    year = SelectField("Expiry Year", validators=[DataRequired()], choices=YEARS)
+    cvv = IntegerField("CVV", validators=[DataRequired(3)])
+    submit = SubmitField("Enter")
+
+
 ######## ROUTES ########
 
 
@@ -257,7 +284,7 @@ def render_forget():
 @app.route("/home")
 def render_home():
     form = SearchForm()
-    items = Item.query.limit(4).all()
+    items = Item.query.filter_by(status="available").limit(4).all()
     # NOTE : pretend r_items is a long list of reccomended items
     r_items = items + items
     f_items = items
@@ -277,18 +304,60 @@ def render_home():
 
 @app.route("/item/<int:item_id>")
 def render_item(item_id):
-    r_items = Item.query.limit(4).all()
+    r_items = Item.query.filter_by(status="available").limit(4).all()
     form = SearchForm()
     item = Item.query.filter_by(id=item_id).first()
     vendor = User.query.filter_by(id=item.user_id).first()
     v_sold_count = len(vendor.sold)
-    reviews=vendor.reviewed[:4]
-    review_authors = [User.query.filter_by(id=review.user_id).first() for review in reviews]
+    reviews = vendor.reviewed[:4]
+    review_authors = [
+        User.query.filter_by(id=review.user_id).first() for review in reviews
+    ]
     reviews = list(zip(review_authors, reviews))
     if item:
         return render_template(
-            "item.html", form=form, item=item, vendor=vendor, r_items=r_items, v_sold_count=v_sold_count, reviews=reviews
+            "item.html",
+            form=form,
+            item=item,
+            vendor=vendor,
+            r_items=r_items,
+            v_sold_count=v_sold_count,
+            reviews=reviews,
         )
+
+
+@app.route("/buy/<int:item_id>", methods=["GET", "POST"])
+@login_required
+def render_buy(item_id):
+    search_form = SearchForm()
+    form = PaymentForm()
+    if form.validate_on_submit():
+        item = Item.query.filter_by(id=item_id).first()
+        vendor = User.query.filter_by(id=item.user_id).first()
+        name = form.name.data
+        card_number = form.card_number.data
+        month = form.month.data
+        year = form.year.data
+        cvv = form.cvv.data
+
+        ### --------------------------- ###
+        ### --------------------------- ###
+        ### INSERT CARD VALIDATION HERE ###
+        ### --------------------------- ###
+        ### --------------------------- ###
+
+        item.status = "bought"
+        transaction = Transaction(
+            user_id=current_user.id,
+            item_id=item.id,
+            vendor_id=vendor.id,
+            value=item.base_price,
+        )
+        db.session.add(transaction)
+        db.session.commit()
+        return redirect(url_for("render_home"))
+
+    return render_template("buy.html", search_form=search_form, form=form)
 
 
 @app.route("/logout")
