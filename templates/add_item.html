@@ -1,0 +1,38 @@
+{% from 'macros/navbar.html' import navbar %}
+{% from 'bootstrap5/form.html' import render_field %}
+{% extends 'base.html' %}
+{% block content %}
+{{ navbar(search_form, current_user) }}
+<div class="container">
+    <form method="post" enctype="multipart/form-data">
+        <div class="row mx-5">
+            <div class="col">
+                <h3><strong>Add Item</strong></h3>
+            </div>
+        </div>
+        <div class="row mx-5">
+            {{ form.csrf_token() }}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- INSERT ITEM IMAGE -->
+                        {{ render_field(form.image_file) }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- INSERT ITEM DESCRIPTION -->
+                        {{ render_field(form.name) }}
+                        {{ render_field(form.category) }}
+                        {{ render_field(form.description) }}
+                        {{ render_field(form.base_price) }}
+                        {{ render_field(form.add) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock content %}

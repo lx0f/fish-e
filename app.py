@@ -1,5 +1,6 @@
 # @redears-lambda TODO: create dummy items, transactions, and likes
 from datetime import datetime
+from uuid import uuid4
 
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_bootstrap import Bootstrap5
@@ -13,6 +14,7 @@ from flask_login import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileRequired, FileField, FileAllowed
 from wtforms import (
     BooleanField,
     EmailField,
@@ -21,8 +23,13 @@ from wtforms import (
     SelectField,
     StringField,
     SubmitField,
+    FileField,
+    FloatField,
+    TextAreaField,
 )
 from wtforms.validators import DataRequired, Length, ValidationError
+from werkzeug.utils import secure_filename
+
 
 ######## APP INIT ########
 
@@ -115,9 +122,10 @@ class Item(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(500), nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    category = db.Column(db.String(20), nullable=True)
     base_price = db.Column(db.Float, nullable=False)
     image_file = db.Column(db.String(200), nullable=False, default="default.jpg")
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     likes = db.relationship("ItemLike", backref="item", lazy=True)
     status = db.Column(
         db.String(10), nullable=False, default="available"
@@ -232,6 +240,19 @@ class PaymentForm(FlaskForm):
     year = SelectField("Expiry Year", validators=[DataRequired()], choices=YEARS)
     cvv = IntegerField("CVV", validators=[DataRequired(3)])
     submit = SubmitField("Enter")
+
+
+class AddItemForm(FlaskForm):
+    CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilties"]
+    image_file = FileField(
+        "Item Image",
+        validators=[FileRequired(), FileAllowed(["jpg", "png"], "Images Only")],
+    )
+    name = StringField("Item Name", validators=[DataRequired()])
+    category = SelectField("Category", validators=[DataRequired()], choices=CATEGORIES)
+    description = TextAreaField("Description", validators=[DataRequired()])
+    base_price = FloatField("Price", validators=[DataRequired()])
+    add = SubmitField("Add")
 
 
 ######## ROUTES ########
@@ -378,7 +399,7 @@ def render_likes():
 
 @app.route("/myitems")
 @login_required
-def render_my_likes():
+def render_my_items():
     search_form = SearchForm()
     b_transactions = current_user.bought
     b_items = [
@@ -398,6 +419,35 @@ def render_my_likes():
         s_items=s_items,
         L_items=L_items,
     )
+
+
+@app.route("/item/add", methods=["GET", "POST"])
+def render_add_item():
+    search_form = SearchForm()
+    form = AddItemForm()
+    if form.validate_on_submit():
+        image_file_name = form.image_file.data.filename
+        file_extentsion = image_file_name[-3]
+        name = form.name.data
+        category = form.category.data
+        description = form.description.data
+        base_price = form.base_price.data
+
+        unique_file_name = uuid4()
+        filename = secure_filename(f"{unique_file_name}.{file_extentsion}")
+        form.image_file.data.save(f"./static/img/{filename}")
+        item = Item(
+            user_id=current_user.id,
+            name=name,
+            description=description,
+            category=category,
+            base_price=base_price,
+            image_file=filename,
+        )
+        db.session.add(item)
+        db.session.commit()
+        return redirect(url_for("render_my_items"))
+    return render_template("add_item.html", search_form=search_form, form=form)
 
 
 @app.route("/logout")
