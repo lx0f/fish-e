@@ -58,10 +58,12 @@
                 <div class="card-title px-3">
                     <strong>Listings ({{ len_of_L_items }})</strong>
                 </div>
-                <div class="card-body overflow-scroll">
+                <div class="card-body overflow-scroll row">
                     {% if L_items %}
                     {% for item in L_items %}
-                    {{ item_card(item, current_user) }}
+                    <div class="col-md-4">
+                        {{ item_card(item, current_user) }}
+                    </div>
                     {% endfor %}
                     {% else %}
                     <u>No listed items yet</u>
