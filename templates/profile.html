@@ -14,15 +14,19 @@
                             <img src="{{ url_for('static', filename='img/profile/' + current_user.image_file) }}"
                                 alt="pfp" class="rounded-circle">
                             <br>
-                            <a href="" data-bs-toggle="modal" data-bs-target="#exampleModal"><small>Change profile
-                                    picture?</small></a>
+                            <a href="" data-bs-toggle="modal" data-bs-target="#pfpModal"><small>change</small></a>
                         </div>
                         <div class="card-body text-center">
-                            <strong>@{{ current_user.username }}</strong> <small>Joined on {{
+                            <strong>@{{ current_user.username }}</strong>
+                            <a href="" data-bs-toggle="modal" data-bs-target="#usernameModal"><small>change</small></a>
+                            <br>
+                            <small>Joined on {{
                                 current_user.date_joined.date()
                                 }}</small>
                             <br>
-                            <small>{{ current_user.rating }} ({{ current_user.ratings }})</small>
+                            <small>
+                                {{ current_user.rating }} ({{ current_user.ratings }})
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -33,7 +37,15 @@
                         <div class="card-title text-center">
                             <strong>About Me</strong>
                             <br>
+                            {% if current_user.description %}
                             <small>{{ current_user.description }}</small>
+                            <br>
+                            <a href="" data-bs-toggle="modal"
+                                data-bs-target="#descriptionModal"><small>change</small></a>
+                            {% else %}
+                            <a href="" data-bs-toggle="modal" data-bs-target="#descriptionModal"><small>add about
+                                    me</small></a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -41,7 +53,7 @@
         </div>
         <div class="col-md-8">
             <div class="card">
-                <div class="card-title text-center">
+                <div class="card-title px-3">
                     <strong>Listings</strong>
                 </div>
                 <div class="card-body">
@@ -49,7 +61,9 @@
                     {% for item in L_items %}
                     {% endfor %}
                     {% else %}
-                    No listed items yet
+                    <u>No listed items yet</u>
+                    <br>
+                    <a href="/item/add"><button class="btn btn-sm btn-primary">Click here to add an item</button></a>
                     {% endif %}
                 </div>
             </div>
@@ -60,11 +74,11 @@
 <!-- Profile Picture Form Modal -->
 <form method="post" enctype="multipart/form-data">
     {{pfp_form.csrf_token() }}
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="pfpModal" tabindex="-1" aria-labelledby="pfpModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Change profile picture</h5>
+                    <h5 class="modal-title" id="pfpModalLabel">Change profile picture</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -73,6 +87,28 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     {{ render_field(pfp_form.apply) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!--  Username Form Modal -->
+<form method="post" enctype="multipart/form-data">
+    {{username_form.csrf_token() }}
+    <div class="modal fade" id="usernameModal" tabindex="-1" aria-labelledby="usernameModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="usernameModalLabel">Change username</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ render_field(username_form.username) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ render_field(username_form.apply) }}
                 </div>
             </div>
         </div>

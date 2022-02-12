@@ -259,8 +259,23 @@ class AddItemForm(FlaskForm):
 
 
 class ProfilePictureForm(FlaskForm):
-    image_file = FileField("New Profile Picture", validators=[FileRequired(), FileAllowed(["jpg", "png"], "Images Only")])
+    image_file = FileField(
+        "New Profile Picture",
+        validators=[FileRequired(), FileAllowed(["jpg", "png"], "Images Only")],
+    )
     apply = SubmitField("Apply")
+
+
+class UsernameForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired()])
+    apply = SubmitField("Apply")
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError(
+                "That username is taken. Please choose a different one."
+            )
 
 
 ######## ROUTES ########
@@ -458,11 +473,14 @@ def render_add_item():
         return redirect(url_for("render_my_items"))
     return render_template("add_item.html", search_form=search_form, form=form)
 
+
 @app.route("/profile", methods=["GET", "POST"])
 def render_profile():
     search_form = SearchForm()
     pfp_form = ProfilePictureForm()
+    username_form = UsernameForm()
     L_items = current_user.items
+
     if pfp_form.validate_on_submit():
         ### SAVE FILE ###
         image_file_name = pfp_form.image_file.data.filename
@@ -476,10 +494,10 @@ def render_profile():
         width, height = im.size
         new_width = 250
         new_height = 250
-        left = (width - new_width)/2
-        top = (height - new_height)/2
-        right = (width + new_width)/2
-        bottom = (height + new_height)/2
+        left = (width - new_width) / 2
+        top = (height - new_height) / 2
+        right = (width + new_width) / 2
+        bottom = (height + new_height) / 2
         im = im.crop((left, top, right, bottom))
         im.save(f"./static/img/profile/{filename}")
 
@@ -487,8 +505,20 @@ def render_profile():
         current_user.image_file = filename
         db.session.commit()
         return redirect(url_for("render_profile"))
-         
-    return render_template("profile.html", search_form=search_form, L_items=L_items, pfp_form=pfp_form)
+
+    if username_form.validate_on_submit():
+        current_user.username = username_form.username.data
+        db.session.commit()
+        return redirect(url_for("render_profile"))
+
+    return render_template(
+        "profile.html",
+        search_form=search_form,
+        L_items=L_items,
+        pfp_form=pfp_form,
+        username_form=username_form,
+    )
+
 
 @app.route("/logout")
 def logout():
