@@ -74,9 +74,17 @@
     </div>
     <div class="row mx-5">
         <div class="col">
-            {% for review in reviews %}
-            {{ review_card(review) }}
-            {% endfor %}
+            <div class="card">
+                <div class="card-title">
+                    <strong>Reviews</strong>
+                </div>
+                <div class="card-body">
+                    {% for review in reviews %}
+                    {{ review_card(review) }}
+                    {% endfor %}
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

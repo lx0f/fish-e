@@ -144,6 +144,7 @@ class Item(db.Model):
 
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.Integer, db.ForeignKey("transaction.id"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
