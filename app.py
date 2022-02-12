@@ -277,6 +277,10 @@ class UsernameForm(FlaskForm):
                 "That username is taken. Please choose a different one."
             )
 
+class DescriptionForm(FlaskForm):
+    description = StringField("Description", validators=[DataRequired(), Length(max=500)])
+    apply = SubmitField("Apply")
+
 
 ######## ROUTES ########
 
@@ -479,7 +483,12 @@ def render_profile():
     search_form = SearchForm()
     pfp_form = ProfilePictureForm()
     username_form = UsernameForm()
+    description_form = DescriptionForm()
     L_items = current_user.items
+    len_of_L_items = len(L_items)
+    reviews = current_user.reviewed
+    review_authors = [User.query.filter_by(id=review.user_id).first() for review in reviews]
+    reviews = list(zip(review_authors, reviews))
 
     if pfp_form.validate_on_submit():
         ### SAVE FILE ###
@@ -511,13 +520,22 @@ def render_profile():
         db.session.commit()
         return redirect(url_for("render_profile"))
 
+    if description_form.validate_on_submit():
+        current_user.description = description_form.description.data
+        db.session.commit()
+        return redirect(url_for("render_profile"))
+
     return render_template(
         "profile.html",
         search_form=search_form,
         L_items=L_items,
         pfp_form=pfp_form,
         username_form=username_form,
+        description_form=description_form,
+        len_of_L_items=len_of_L_items,
+        reviews=reviews
     )
+
 
 
 @app.route("/logout")
