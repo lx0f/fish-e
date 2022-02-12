@@ -1,0 +1,164 @@
+{% from 'bootstrap5/form.html' import render_field %}
+{% from 'macros/item_card.html' import item_card %}
+{% from 'macros/navbar.html' import navbar %}
+{% from 'macros/review_card.html' import review_card %}
+{% extends 'base.html' %}
+{% block title %}{{ current_user.username }}{% endblock title %}
+{% block content %}
+{{ navbar(search_form, current_user) }}
+<div class="container">
+    <div class="row mx-5">
+        <div class="col-md-4">
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-title text-center">
+                            <img src="{{ url_for('static', filename='img/profile/' + current_user.image_file) }}"
+                                alt="pfp" class="rounded-circle">
+                            <br>
+                            <a href="" data-bs-toggle="modal" data-bs-target="#pfpModal"><small>change</small></a>
+                        </div>
+                        <div class="card-body text-center">
+                            <strong>@{{ current_user.username }}</strong>
+                            <a href="" data-bs-toggle="modal" data-bs-target="#usernameModal"><small>change</small></a>
+                            <br>
+                            <small>Joined on {{
+                                current_user.date_joined.date()
+                                }}</small>
+                            <br>
+                            <small>
+                                {{ current_user.rating }} ({{ current_user.ratings }})
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-title text-center">
+                            <strong>About Me</strong>
+                            <br>
+                            {% if current_user.description %}
+                            <small>{{ current_user.description }}</small>
+                            <br>
+                            <a href="" data-bs-toggle="modal"
+                                data-bs-target="#descriptionModal"><small>change</small></a>
+                            {% else %}
+                            <a href="" data-bs-toggle="modal" data-bs-target="#descriptionModal"><small>add about
+                                    me</small></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card" style="max-height: 80%;">
+                <div class="card-title px-3">
+                    <strong>Listings ({{ len_of_L_items }})</strong>
+                </div>
+                <div class="card-body overflow-scroll">
+                    {% if L_items %}
+                    {% for item in L_items %}
+                    {{ item_card(item, current_user) }}
+                    {% endfor %}
+                    {% else %}
+                    <u>No listed items yet</u>
+                    <br>
+                    <a href="/item/add"><button class="btn btn-sm btn-primary">Click here to add an item</button></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mx-5">
+        <div class="col">
+            <div class="card">
+                <div class="card-title">
+                    <strong>Reviews</strong>
+                </div>
+                <div class="card-body">
+                    {% for review in reviews %}
+                    {{ review_card(review) }}
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ### ---------------- ### -->
+<!-- ### ---------------- ### -->
+<!-- ### ---- MODALS ---- ### -->
+<!-- ### ---------------- ### -->
+<!-- ### ---------------- ### -->
+
+<!-- Profile Picture Form Modal -->
+<form method="post" enctype="multipart/form-data">
+    {{pfp_form.csrf_token() }}
+    <div class="modal fade" id="pfpModal" tabindex="-1" aria-labelledby="pfpModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pfpModalLabel">Change profile picture</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ render_field(pfp_form.image_file) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ render_field(pfp_form.apply) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!--  Username Form Modal -->
+<form method="post">
+    {{username_form.csrf_token() }}
+    <div class="modal fade" id="usernameModal" tabindex="-1" aria-labelledby="usernameModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="usernameModalLabel">Change username</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ render_field(username_form.username) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ render_field(username_form.apply) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Description Form Modal -->
+<form method="post">
+    {{description_form.csrf_token() }}
+    <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptioinModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="descriptionModalLabel">Change description</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ render_field(description_form.description) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ render_field(description_form.apply) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock content %}

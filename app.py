@@ -1,5 +1,6 @@
 # @redears-lambda TODO: create dummy items, transactions, and likes
 from datetime import datetime
+from PIL import Image
 from uuid import uuid4
 
 from flask import Flask, jsonify, redirect, render_template, request, url_for
@@ -62,8 +63,10 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    description = db.Column(db.String(500), nullable=True)
     image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
     password = db.Column(db.String(60), nullable=False)
+    date_joined = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     items = db.relationship("Item", backref="author", lazy=True)
     bought = db.relationship(
         "Transaction", foreign_keys="Transaction.user_id", backref="buyer", lazy=True
@@ -141,6 +144,7 @@ class Item(db.Model):
 
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.Integer, db.ForeignKey("transaction.id"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -253,6 +257,30 @@ class AddItemForm(FlaskForm):
     description = TextAreaField("Description", validators=[DataRequired()])
     base_price = FloatField("Price", validators=[DataRequired()])
     add = SubmitField("Add")
+
+
+class ProfilePictureForm(FlaskForm):
+    image_file = FileField(
+        "New Profile Picture",
+        validators=[FileRequired(), FileAllowed(["jpg", "png"], "Images Only")],
+    )
+    apply = SubmitField("Apply")
+
+
+class UsernameForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired()])
+    apply = SubmitField("Apply")
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError(
+                "That username is taken. Please choose a different one."
+            )
+
+class DescriptionForm(FlaskForm):
+    description = StringField("Description", validators=[DataRequired(), Length(max=500)])
+    apply = SubmitField("Apply")
 
 
 ######## ROUTES ########
@@ -422,12 +450,13 @@ def render_my_items():
 
 
 @app.route("/item/add", methods=["GET", "POST"])
+@login_required
 def render_add_item():
     search_form = SearchForm()
     form = AddItemForm()
     if form.validate_on_submit():
         image_file_name = form.image_file.data.filename
-        file_extentsion = image_file_name[-3]
+        file_extentsion = image_file_name[-3:]
         name = form.name.data
         category = form.category.data
         description = form.description.data
@@ -435,7 +464,7 @@ def render_add_item():
 
         unique_file_name = uuid4()
         filename = secure_filename(f"{unique_file_name}.{file_extentsion}")
-        form.image_file.data.save(f"./static/img/{filename}")
+        form.image_file.data.save(f"./static/img/fish/{filename}")
         item = Item(
             user_id=current_user.id,
             name=name,
@@ -448,6 +477,66 @@ def render_add_item():
         db.session.commit()
         return redirect(url_for("render_my_items"))
     return render_template("add_item.html", search_form=search_form, form=form)
+
+
+@app.route("/profile", methods=["GET", "POST"])
+def render_profile():
+    search_form = SearchForm()
+    pfp_form = ProfilePictureForm()
+    username_form = UsernameForm()
+    description_form = DescriptionForm()
+    L_items = current_user.items
+    len_of_L_items = len(L_items)
+    reviews = current_user.reviewed
+    review_authors = [User.query.filter_by(id=review.user_id).first() for review in reviews]
+    reviews = list(zip(review_authors, reviews))
+
+    if pfp_form.validate_on_submit():
+        ### SAVE FILE ###
+        image_file_name = pfp_form.image_file.data.filename
+        file_extention = image_file_name[-3:]
+        unique_file_name = uuid4()
+        filename = secure_filename(f"{unique_file_name}.{file_extention}")
+        pfp_form.image_file.data.save(f"./static/img/profile/{filename}")
+
+        ### CROP IMAGE ###
+        im = Image.open(f"./static/img/profile/{filename}")
+        width, height = im.size
+        new_width = 250
+        new_height = 250
+        left = (width - new_width) / 2
+        top = (height - new_height) / 2
+        right = (width + new_width) / 2
+        bottom = (height + new_height) / 2
+        im = im.crop((left, top, right, bottom))
+        im.save(f"./static/img/profile/{filename}")
+
+        ### CHANGE USER IMAGE FILE NAME ###
+        current_user.image_file = filename
+        db.session.commit()
+        return redirect(url_for("render_profile"))
+
+    if username_form.validate_on_submit():
+        current_user.username = username_form.username.data
+        db.session.commit()
+        return redirect(url_for("render_profile"))
+
+    if description_form.validate_on_submit():
+        current_user.description = description_form.description.data
+        db.session.commit()
+        return redirect(url_for("render_profile"))
+
+    return render_template(
+        "profile.html",
+        search_form=search_form,
+        L_items=L_items,
+        pfp_form=pfp_form,
+        username_form=username_form,
+        description_form=description_form,
+        len_of_L_items=len_of_L_items,
+        reviews=reviews
+    )
+
 
 
 @app.route("/logout")
