@@ -1,6 +1,12 @@
 <!-- TODO : make sure navbar content changes based on user -->
 {% macro navbar(form, current_user) %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<style>
+    #top{
+        background-color: #9ee2c7;
+    }
+</style>
+
+<nav id = "top" class="navbar navbar-expand-lg navbar-dark ">
     <div class="container-fluid">
         <a class="navbar-brand" href="/home"><img src="" alt="Insert Fish E logo"></a>
         <form class="d-flex" action="/search" method="get">
