@@ -556,17 +556,17 @@ def render_profile(user_id):
         ### CHANGE USER IMAGE FILE NAME ###
         current_user.image_file = filename
         db.session.commit()
-        return redirect(url_for("render_profile", user_id=user_id))
+        return redirect(url_for("render_profile", user_id=current_user.id))
 
     if username_form.validate_on_submit():
         current_user.username = username_form.username.data
         db.session.commit()
-        return redirect(url_for("render_profile"), user_id=user_id)
+        return redirect(url_for("render_profile"), user_id=current_user.id)
 
     if description_form.validate_on_submit():
         current_user.description = description_form.description.data
         db.session.commit()
-        return redirect(url_for("render_profile"), user_id=user_id)
+        return redirect(url_for("render_profile"), user_id=current_user.id)
 
     return render_template(
         "profile.html",
