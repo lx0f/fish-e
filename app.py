@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from uuid import uuid4
 
+from flask_mail import Mail, Message
 import numpy as np
 import pandas as pd
 import plotly
@@ -36,15 +37,7 @@ from wtforms import (
     SubmitField,
     TextAreaField,
 )
-from wtforms.validators import DataRequired, Length, ValidationError
-
-######## PLOTING ########
-
-
-def create_plot(df_x, df_y, graph=go.Bar):
-    data = [graph(x=df_x, y=df_y)]
-    graphJSON = json.dumps(data, cls=PlotlyJSONEncoder)
-    return graphJSON
+from wtforms.validators import DataRequired, Length, ValidationError, NumberRange
 
 
 ######## APP INIT ########
@@ -54,10 +47,21 @@ Bootstrap5(app)
 app.config["SECRET_KEY"] = "secret"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["WHOOSH_BASE"] = "whoosh"
-db = SQLAlchemy(app)
+app.config['MAIL_SERVER']='smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = 'fishe8861@gmail.com'
+app.config['MAIL_PASSWORD'] = 'fishe87654321'
+app.config['MAIL_SUPPRESS_SEND'] = False
+app.config['TESTING'] = False
+# app.config["WHOOSH_BASE"] = "whoosh"
+db = SQLAlchemy(app, session_options={
+    "expire_on_commit": False
+})
 login_manager = LoginManager(app)
 search = Search(app, db)
+mail = Mail(app)
 
 
 ######## LOGIN MANAGER ########
@@ -74,7 +78,6 @@ def unauthorized_callback():
 
 
 ######## MODELS ########
-
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -196,8 +199,10 @@ class Transaction(db.Model):
     def __repr__(self):
         return f"Transaction(user_id={self.user_id},vendor_id={self.vendor_id},item_id={self.item_id},value={self.value},date_transacted='{self.date_transacted}')"
 
-
-######## INDEXING ########
+class PasswordPin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    pin = db.Column(db.Integer, nullable=False)
 
 ######## FORMS ########
 
@@ -320,6 +325,20 @@ class ReviewForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
+class PinForm(FlaskForm):
+    pin = IntegerField("Pin", validators=[DataRequired(), NumberRange(min=100000, max=999999, message="Please enter a 6 digit number")])
+    submit = SubmitField("Submit")
+
+    def validate_pin(self, pin):
+        user_id = request.base_url.split("/")[-1]
+        real_pin = PasswordPin.query.filter_by(user_id=user_id).all()[-1]
+        if pin.data != real_pin.pin:
+            raise ValidationError(message="You have entered the wrong pin")
+
+class ResetPasswordForm(FlaskForm):
+    password = StringField("Password", validators=[DataRequired(), Length(8, 30, message="Your password's length should be between 8 to 30")])
+    submit = SubmitField("Reset")
+
 ######## ROUTES ########
 
 
@@ -360,11 +379,19 @@ def render_register():
 
 @app.route("/forget", methods=["GET", "POST"])
 def render_forget():
-    if request.method == "GET":
-        return render_template("forget.html", form=ForgetForm())
-    elif request.method == "POST":
-        data = request.form
-        return jsonify(data)
+    form = ForgetForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        user = User.query.filter_by(email=email).first()
+        six_pin = str(int(np.random.randint(low=100000, high=999999, size=1)))
+        real_pin = PasswordPin(user_id=user.id, pin=six_pin)
+        db.session.add(real_pin)
+        db.session.commit()
+        with app.app_context():
+            msg = Message(subject="Forget password", sender=app.config.get("MAIL_USERNAME"), recipients=[str(email)], body=six_pin)
+            mail.send(msg)
+        return redirect(url_for("render_pin", user_id=user.id))
+    return render_template("forget.html", form=form)
 
 
 @app.route("/home")
@@ -525,7 +552,7 @@ def render_profile(user_id):
     pfp_form = ProfilePictureForm()
     username_form = UsernameForm()
     description_form = DescriptionForm()
-    L_items = Item.query.filter_by(id=user.id, status="available").all()
+    L_items = Item.query.filter_by(user_id=user.id, status="available").all()
     len_of_L_items = len(L_items)
     reviews = user.reviewed
     review_authors = [
@@ -561,12 +588,12 @@ def render_profile(user_id):
     if username_form.validate_on_submit():
         current_user.username = username_form.username.data
         db.session.commit()
-        return redirect(url_for("render_profile"), user_id=current_user.id)
+        return redirect(url_for("render_profile", user_id=current_user.id))
 
     if description_form.validate_on_submit():
         current_user.description = description_form.description.data
         db.session.commit()
-        return redirect(url_for("render_profile"), user_id=current_user.id)
+        return redirect(url_for("render_profile", user_id=current_user.id))
 
     return render_template(
         "profile.html",
@@ -676,10 +703,29 @@ def render_analytics():
         total_items=total_items,
     )
 
+@app.route("/pin/<int:user_id>", methods=["GET", "POST"])
+def render_pin(user_id):
+    pin_form = PinForm()
+    if pin_form.validate_on_submit():
+        return redirect(url_for("render_reset_password", user_id=user_id))
+    return render_template("password_pin.html", pin_form=pin_form)
+
+@app.route("/pin/<int:user_id>/reset", methods=["GET", "POST"])
+def render_reset_password(user_id):
+    reset_password_form = ResetPasswordForm()
+    if reset_password_form.validate_on_submit():
+        new_password = reset_password_form.password.data
+        user = User.query.filter_by(id=user_id).first()
+        user.password = new_password
+        db.session.commit()
+        return redirect(url_for("render_login"))
+    return render_template("reset_password.html", reset_password_form=reset_password_form)
+
 
 @app.route("/logout")
 def logout():
     logout_user()
+    db.session.close()
     return redirect("home")
 
 
