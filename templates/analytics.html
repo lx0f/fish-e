@@ -3,6 +3,12 @@
 {% block title %}analytics{% endblock title %}
 {% block content %}
 {{ navbar(search_form, current_user) }}
+<style>
+    .card {
+        margin: 10px 10px 10px 10px;
+    }
+</style>
+
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
 <div class="container">

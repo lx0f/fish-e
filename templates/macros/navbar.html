@@ -4,11 +4,22 @@
     #top{
         background-color: #9ee2c7;
     }
+
+    .btn {
+        background-color: #25a9b2;
+        border-color: #25a9b2;
+    }
+
+    #logo {
+        border-radius: 50%;
+        width: 70px;
+        height: auto;
+    }
 </style>
 
 <nav id = "top" class="navbar navbar-expand-lg navbar-dark ">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/home"><img src="" alt="Insert Fish E logo"></a>
+        <a class="navbar-brand" href="/home"><img id="logo" src="/static/img/fish/logo.png" alt="Insert Fish E logo"></a>
         <form class="d-flex" action="/search" method="get">
             {{ form.csrf_token }}
             {{ form.search(class_="form-control me-2") }}
