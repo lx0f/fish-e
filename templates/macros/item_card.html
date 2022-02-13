@@ -3,11 +3,14 @@
     <img src="{{ url_for('static', filename='img/fish/' + item.image_file) }}" alt="insert image"
         style="display: block; max-width: 100%; height: auto;">
     <div class="card-body">
-        {% if item.status == "bought" %}
-        <h5 class="card-title">{{ item.name }} <small>(bought)</small></h5>
-        {% else %}
-        <h5 class="card-title">{{ item.name }} <small>(${{ item.base_price }})</small></h5>
-        {% endif %}
+        <h5 class="card-title">{{ item.name }}
+            {% if item.status == "bought" %}
+            <small>(bought)</small>
+            {% else %}
+            <small>(${{ item.base_price }})</small>
+            {% endif %}
+            <span class="badge bg-success">{{ item.category }}</span>
+        </h5>
         <p class="card-text">{{ item.description }}</p>
         <!-- TODO : make the href change dynamically -->
         <a href="/item/{{ item.id }}" class="btn btn-primary">Details</a>
