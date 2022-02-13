@@ -1,0 +1,32 @@
+{% from 'macros/navbar.html' import navbar %}
+{% extends 'base.html' %}
+{% block title %}analytics{% endblock title %}
+{% block content %}
+{{ navbar(search_form, current_user) }}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Total Revenue this month</div>
+                <div class="card-body">{{ total_revenue }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">Graph</div>
+                <div class="card-body justify-content-center d-flex p-0" id="sales" style="height: 400px">
+                    <!-- INSERT SALES GRAPH HERE -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var graphs = {{ plot | safe}};
+    Plotly.newPlot('sales', graphs, { margin: { t: 0, b: 35 } });
+</script>
+{% endblock content %}
