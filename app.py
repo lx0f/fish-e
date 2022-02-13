@@ -1,7 +1,12 @@
 # @redears-lambda TODO: create dummy items, transactions, and likes
+import json
 from datetime import datetime
 from uuid import uuid4
 
+import numpy as np
+import pandas as pd
+import plotly
+import plotly.graph_objects as go
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_bootstrap import Bootstrap5
 from flask_login import (
@@ -12,12 +17,12 @@ from flask_login import (
     login_user,
     logout_user,
 )
+from flask_msearch import Search
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from PIL import Image
-from flask_msearch import Search
-import json
+from plotly.utils import PlotlyJSONEncoder
 from werkzeug.utils import secure_filename
 from wtforms import (
     BooleanField,
@@ -32,11 +37,6 @@ from wtforms import (
     TextAreaField,
 )
 from wtforms.validators import DataRequired, Length, ValidationError
-import pandas as pd
-import numpy as np
-import plotly
-from plotly.utils import PlotlyJSONEncoder
-import plotly.graph_objects as go
 
 ######## PLOTING ########
 
@@ -270,7 +270,7 @@ class PaymentForm(FlaskForm):
 
 
 class AddItemForm(FlaskForm):
-    CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilties"]
+    CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilities"]
     image_file = FileField(
         "Item Image",
         validators=[FileRequired(), FileAllowed(["jpg", "png"], "Images Only")],
@@ -625,15 +625,56 @@ def render_analytics():
     search_form = SearchForm()
     # REVENUE OVER TIME
     sold = current_user.sold
+    items_sold = [
+        Item.query.filter_by(id=transaction.item_id).first() for transaction in sold
+    ]
     value_of_transactions = [transaction.value for transaction in sold]
+    total_revenue = sum(value_of_transactions)
+    total_items = len(value_of_transactions)
     date_of_transactions = [transaction.date_transacted.date() for transaction in sold]
+
     revenue_over_time_df = pd.DataFrame(
         {"x": date_of_transactions, "y": value_of_transactions}
     )
-    plot = create_plot(
-        revenue_over_time_df["x"], revenue_over_time_df["y"], graph=go.Line
+    ROT_data = [go.Bar(x=revenue_over_time_df["x"], y=revenue_over_time_df["y"])]
+    revenue_over_time_plot = json.dumps(ROT_data, cls=PlotlyJSONEncoder)
+
+    CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilties"]
+    revenue_by_fish = sum(
+        [item.base_price for item in items_sold if item.category == "Fish"]
     )
-    return render_template("analytics.html", search_form=search_form, plot=plot)
+    revenue_by_food = sum(
+        [item.base_price for item in items_sold if item.category == "Food"]
+    )
+    revenue_by_tank = sum(
+        [item.base_price for item in items_sold if item.category == "Tank"]
+    )
+    revenue_by_decoration = sum(
+        [item.base_price for item in items_sold if item.category == "Decoration"]
+    )
+    revenue_by_utilities = sum(
+        [item.base_price for item in items_sold if item.category == "Utilities"]
+    )
+    list_of_revenue_by_category = [
+        revenue_by_fish,
+        revenue_by_food,
+        revenue_by_tank,
+        revenue_by_decoration,
+        revenue_by_utilities,
+    ]
+    revenue_by_category_df = pd.DataFrame(
+        {"x": CATEGORIES, "y": list_of_revenue_by_category}
+    )
+    RBC_data = [go.Bar(x=revenue_by_category_df["x"], y=revenue_by_category_df["y"])]
+    revenue_by_category_plot = json.dumps(RBC_data, cls=PlotlyJSONEncoder)
+    return render_template(
+        "analytics.html",
+        search_form=search_form,
+        revenue_over_time_plot=revenue_over_time_plot,
+        revenue_by_category_plot=revenue_by_category_plot,
+        total_revenue=total_revenue,
+        total_items=total_items,
+    )
 
 
 @app.route("/logout")
@@ -645,7 +686,7 @@ def logout():
 @app.route("/like/<int:item_id>/<action>")
 @login_required
 def like_action(item_id, action):
-    item = Item.query.filter(id=item_id).first()
+    item = Item.query.filter(Item.id == item_id).first()
     if action == "like":
         current_user.like_item(item)
         db.session.commit()

@@ -10,23 +10,42 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">Total Revenue this month</div>
-                <div class="card-body">{{ total_revenue }}</div>
+                <div class="card-body text-primary text-center"><strong>${{ total_revenue }}</strong></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Total Items this month</div>
+                <div class="card-body text-primary text-center"><strong>{{ total_items }}</strong></div>
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header">Graph</div>
-                <div class="card-body justify-content-center d-flex p-0" id="sales" style="height: 400px">
-                    <!-- INSERT SALES GRAPH HERE -->
+                <div class="card-header">Revenue over time</div>
+                <div class="card-body justify-content-center d-flex p-0" id="revenue-over-time" style="height: 300px">
+                    <!-- INSERT REVENUE OVER TIME PLOT HERE -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">Revenue by Category</div>
+                <div class="card-body justify-content-center d-flex p-0" id="revenue-by-category"
+                    style="height: 300px;">
+                    <!-- INSERT REVENUE BY CATEGORY PLOT HERE -->
                 </div>
             </div>
         </div>
     </div>
 </div>
 <script>
-    var graphs = {{ plot | safe}};
-    Plotly.newPlot('sales', graphs, { margin: { t: 0, b: 35 } });
+    var revenue_over_time_plot = {{ revenue_over_time_plot | safe}};
+    var revenue_by_category_plot = {{ revenue_by_category_plot | safe }}
+    Plotly.newPlot('revenue-over-time', revenue_over_time_plot, { margin: { t: 0, b: 35 } });
+    Plotly.newPlot('revenue-by-category', revenue_by_category_plot, { margin: { t: 0, b: 35 } });
 </script>
 {% endblock content %}
