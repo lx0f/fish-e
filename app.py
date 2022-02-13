@@ -250,7 +250,7 @@ class ForgetForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     search = StringField(
-        validators=[DataRequired()], render_kw={"placeholder": "Enter Search"}
+        validators=[DataRequired()], render_kw={"placeholder": "Enter Search", "style":"height: 100%;"}
     )
     submit = SubmitField("Search")
 
