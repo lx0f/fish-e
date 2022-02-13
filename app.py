@@ -494,15 +494,16 @@ def render_add_item():
     return render_template("add_item.html", search_form=search_form, form=form)
 
 
-@app.route("/profile", methods=["GET", "POST"])
-def render_profile():
+@app.route("/profile/<int:user_id>", methods=["GET", "POST"])
+def render_profile(user_id):
+    user = User.query.filter_by(id=user_id).first()
     search_form = SearchForm()
     pfp_form = ProfilePictureForm()
     username_form = UsernameForm()
     description_form = DescriptionForm()
-    L_items = current_user.items
+    L_items = Item.query.filter_by(id=user.id, status="available").all()
     len_of_L_items = len(L_items)
-    reviews = current_user.reviewed
+    reviews = user.reviewed
     review_authors = [
         User.query.filter_by(id=review.user_id).first() for review in reviews
     ]
@@ -552,6 +553,7 @@ def render_profile():
         description_form=description_form,
         len_of_L_items=len_of_L_items,
         reviews=reviews,
+        user=user
     )
 
 
@@ -566,7 +568,7 @@ def render_review(transaction_id):
         rating = form.rating.data
         comment = form.comment.data
         review = Review(
-            user_id=user_id, recipient_id=recipient_id, rating=rating, comment=comment
+            user_id=user_id, recipient_id=recipient_id, rating=rating, comment=comment, transaction_id=transaction_id
         )
         db.session.add(review)
         db.session.commit()

@@ -4,7 +4,7 @@
         <div class="user d-flex flex-row align-items-center">
             <img src="{{ url_for('static', filename='img/profile/' + review[0].image_file) }}" width="30"
                 class="user-img rounded-circle mr-2">
-            <span>
+            <span class="mx-1">
                 <small class="font-weight-bold text-primary">{{ review[0].username }}</small>
                 <small class="font-weight-bold">{{ review[1].comment }}</small>
             </span>
