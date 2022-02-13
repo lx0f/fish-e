@@ -41,7 +41,9 @@ block title %}home{% endblock title %}
                             </div>
                             <div class="col">
                                 <span style="position: absolute; bottom: 0; right: 0;">
-                                    <a href="/buy/{{ item.id }}"><button class="btn btn-primary m-2">Buy</button></a>
+                                    <a href="/buy/{{ item.id }}" role="button"
+                                        class="btn btn-primary m-2 {% if item.status=='bought' %}disabled{% endif %}" {%
+                                        if item.status=='bought' %} aria-disabled="true" {% endif %}">Buy</a>
                                 </span>
                             </div>
                         </div>
