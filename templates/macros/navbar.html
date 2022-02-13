@@ -25,8 +25,9 @@
             <!-- NOTE: avatar picture aspect ratio has to be 1:1-->
             <!-- default profile picture: https://mdbcdn.b-cdn.net/img/new/avatars/2.webp -->
             <div class="col">
-                <a href="/profile"><img src="{{ url_for('static', filename='img/profile/' + current_user.image_file) }}"
-                        alt="pfp" class="rounded-circle" width="38px"></a>
+                <a href="/profile/{{ current_user.id }}"><img
+                        src="{{ url_for('static', filename='img/profile/' + current_user.image_file) }}" alt="pfp"
+                        class="rounded-circle" width="38px"></a>
             </div>
             {% else %}
             <div class="col">

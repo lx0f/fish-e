@@ -3,7 +3,7 @@
 {% from 'macros/navbar.html' import navbar %}
 {% from 'macros/review_card.html' import review_card %}
 {% extends 'base.html' %}
-{% block title %}{{ current_user.username }}{% endblock title %}
+{% block title %}{{ user.username }}{% endblock title %}
 {% block content %}
 {{ navbar(search_form, current_user) }}
 <div class="container">
@@ -13,21 +13,25 @@
                 <div class="col">
                     <div class="card">
                         <div class="card-title text-center">
-                            <img src="{{ url_for('static', filename='img/profile/' + current_user.image_file) }}"
-                                alt="pfp" class="rounded-circle">
+                            <img src="{{ url_for('static', filename='img/profile/' + user.image_file) }}" alt="pfp"
+                                class="rounded-circle">
                             <br>
+                            {% if user == current_user %}
                             <a href="" data-bs-toggle="modal" data-bs-target="#pfpModal"><small>change</small></a>
+                            {% endif %}
                         </div>
                         <div class="card-body text-center">
-                            <strong>@{{ current_user.username }}</strong>
+                            <strong>@{{ user.username }}</strong>
+                            {% if user == current_user %}
                             <a href="" data-bs-toggle="modal" data-bs-target="#usernameModal"><small>change</small></a>
+                            {% endif %}
                             <br>
                             <small>Joined on {{
-                                current_user.date_joined.date()
+                                user.date_joined.date()
                                 }}</small>
                             <br>
                             <small>
-                                {{ current_user.rating }} ({{ current_user.ratings }})
+                                {{ user.rating }} ({{ user.ratings }})
                             </small>
                         </div>
                     </div>
@@ -39,14 +43,18 @@
                         <div class="card-title text-center">
                             <strong>About Me</strong>
                             <br>
-                            {% if current_user.description %}
-                            <small>{{ current_user.description }}</small>
+                            {% if user.description %}
+                            <small>{{ user.description }}</small>
                             <br>
+                            {% if user == current_user %}
                             <a href="" data-bs-toggle="modal"
                                 data-bs-target="#descriptionModal"><small>change</small></a>
+                            {% endif %}
                             {% else %}
+                            {% if user == current_user %}
                             <a href="" data-bs-toggle="modal" data-bs-target="#descriptionModal"><small>add about
                                     me</small></a>
+                            {% endif %}
                             {% endif %}
                         </div>
                     </div>
@@ -58,15 +66,19 @@
                 <div class="card-title px-3">
                     <strong>Listings ({{ len_of_L_items }})</strong>
                 </div>
-                <div class="card-body overflow-scroll">
+                <div class="card-body overflow-scroll row">
                     {% if L_items %}
                     {% for item in L_items %}
-                    {{ item_card(item, current_user) }}
+                    <div class="col-md-4">
+                        {{ item_card(item, current_user) }}
+                    </div>
                     {% endfor %}
                     {% else %}
                     <u>No listed items yet</u>
                     <br>
+                    {% if user == current_user %}
                     <a href="/item/add"><button class="btn btn-sm btn-primary">Click here to add an item</button></a>
+                    {% endif %}
                     {% endif %}
                 </div>
             </div>

@@ -278,9 +278,23 @@ class UsernameForm(FlaskForm):
                 "That username is taken. Please choose a different one."
             )
 
+
 class DescriptionForm(FlaskForm):
-    description = StringField("Description", validators=[DataRequired(), Length(max=500)])
+    description = StringField(
+        "Description", validators=[DataRequired(), Length(max=500)]
+    )
     apply = SubmitField("Apply")
+
+
+class ReviewForm(FlaskForm):
+    choices = [1, 2, 3, 4, 5]
+    rating = SelectField("Rating", validators=[DataRequired()], choices=choices)
+    comment = TextAreaField(
+        "Comment",
+        validators=[DataRequired(), Length(5, 500)],
+        render_kw={"placeholder": "Enter your comment here"},
+    )
+    submit = SubmitField("Submit")
 
 
 ######## ROUTES ########
@@ -404,7 +418,8 @@ def render_buy(item_id):
         )
         db.session.add(transaction)
         db.session.commit()
-        return redirect(url_for("render_home"))
+        transaction = Transaction.query.filter_by(item_id=item.id).first()
+        return redirect(url_for("render_review", transaction_id=transaction.id))
 
     return render_template("buy.html", search_form=search_form, form=form)
 
@@ -479,16 +494,19 @@ def render_add_item():
     return render_template("add_item.html", search_form=search_form, form=form)
 
 
-@app.route("/profile", methods=["GET", "POST"])
-def render_profile():
+@app.route("/profile/<int:user_id>", methods=["GET", "POST"])
+def render_profile(user_id):
+    user = User.query.filter_by(id=user_id).first()
     search_form = SearchForm()
     pfp_form = ProfilePictureForm()
     username_form = UsernameForm()
     description_form = DescriptionForm()
-    L_items = current_user.items
+    L_items = Item.query.filter_by(id=user.id, status="available").all()
     len_of_L_items = len(L_items)
-    reviews = current_user.reviewed
-    review_authors = [User.query.filter_by(id=review.user_id).first() for review in reviews]
+    reviews = user.reviewed
+    review_authors = [
+        User.query.filter_by(id=review.user_id).first() for review in reviews
+    ]
     reviews = list(zip(review_authors, reviews))
 
     if pfp_form.validate_on_submit():
@@ -534,9 +552,29 @@ def render_profile():
         username_form=username_form,
         description_form=description_form,
         len_of_L_items=len_of_L_items,
-        reviews=reviews
+        reviews=reviews,
+        user=user
     )
 
+
+@app.route("/review/<int:transaction_id>", methods=["GET", "POST"])
+def render_review(transaction_id):
+    search_form = SearchForm()
+    form = ReviewForm()
+    if form.validate_on_submit():
+        transaction = Transaction.query.filter_by(id=transaction_id).first()
+        user_id = transaction.user_id
+        recipient_id = transaction.vendor_id
+        rating = form.rating.data
+        comment = form.comment.data
+        review = Review(
+            user_id=user_id, recipient_id=recipient_id, rating=rating, comment=comment, transaction_id=transaction_id
+        )
+        db.session.add(review)
+        db.session.commit()
+        return redirect(url_for("render_home"))
+
+    return render_template("review.html", form=form, search_form=search_form)
 
 
 @app.route("/logout")
