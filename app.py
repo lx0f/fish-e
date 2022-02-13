@@ -17,6 +17,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from PIL import Image
 from flask_msearch import Search
+import json
 from werkzeug.utils import secure_filename
 from wtforms import (
     BooleanField,
@@ -31,6 +32,19 @@ from wtforms import (
     TextAreaField,
 )
 from wtforms.validators import DataRequired, Length, ValidationError
+import pandas as pd
+import numpy as np
+import plotly
+from plotly.utils import PlotlyJSONEncoder
+import plotly.graph_objects as go
+
+######## PLOTING ########
+
+
+def create_plot(df_x, df_y, graph=go.Bar):
+    data = [graph(x=df_x, y=df_y)]
+    graphJSON = json.dumps(data, cls=PlotlyJSONEncoder)
+    return graphJSON
 
 
 ######## APP INIT ########
@@ -182,7 +196,8 @@ class Transaction(db.Model):
     def __repr__(self):
         return f"Transaction(user_id={self.user_id},vendor_id={self.vendor_id},item_id={self.item_id},value={self.value},date_transacted='{self.date_transacted}')"
 
-######## INDEXING ######## 
+
+######## INDEXING ########
 
 ######## FORMS ########
 
@@ -541,17 +556,17 @@ def render_profile(user_id):
         ### CHANGE USER IMAGE FILE NAME ###
         current_user.image_file = filename
         db.session.commit()
-        return redirect(url_for("render_profile"))
+        return redirect(url_for("render_profile", user_id=user_id))
 
     if username_form.validate_on_submit():
         current_user.username = username_form.username.data
         db.session.commit()
-        return redirect(url_for("render_profile"))
+        return redirect(url_for("render_profile"), user_id=user_id)
 
     if description_form.validate_on_submit():
         current_user.description = description_form.description.data
         db.session.commit()
-        return redirect(url_for("render_profile"))
+        return redirect(url_for("render_profile"), user_id=user_id)
 
     return render_template(
         "profile.html",
@@ -594,9 +609,31 @@ def render_review(transaction_id):
 def render_search():
     search_form = SearchForm()
     search = request.args.get("search")
-    items = Item.query.msearch(search,fields=['name','description'])
+    items = Item.query.msearch(search, fields=["name", "description"])
     count_of_items = len(list(items))
-    return render_template("search.html", search_form=search_form, items=items, search=search, count_of_items=count_of_items)
+    return render_template(
+        "search.html",
+        search_form=search_form,
+        items=items,
+        search=search,
+        count_of_items=count_of_items,
+    )
+
+
+@app.route("/analytics")
+def render_analytics():
+    search_form = SearchForm()
+    # REVENUE OVER TIME
+    sold = current_user.sold
+    value_of_transactions = [transaction.value for transaction in sold]
+    date_of_transactions = [transaction.date_transacted.date() for transaction in sold]
+    revenue_over_time_df = pd.DataFrame(
+        {"x": date_of_transactions, "y": value_of_transactions}
+    )
+    plot = create_plot(
+        revenue_over_time_df["x"], revenue_over_time_df["y"], graph=go.Line
+    )
+    return render_template("analytics.html", search_form=search_form, plot=plot)
 
 
 @app.route("/logout")
