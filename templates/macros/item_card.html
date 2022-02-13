@@ -6,7 +6,7 @@
         {% if item.status == "bought" %}
         <h5 class="card-title">{{ item.name }} <small>(bought)</small></h5>
         {% else %}
-        <h5 class="card-title">{{ item.name }}</h5>
+        <h5 class="card-title">{{ item.name }} <small>(${{ item.base_price }})</small></h5>
         {% endif %}
         <p class="card-text">{{ item.description }}</p>
         <!-- TODO : make the href change dynamically -->
