@@ -1,6 +1,5 @@
 # @redears-lambda TODO: create dummy items, transactions, and likes
 from datetime import datetime
-from PIL import Image
 from uuid import uuid4
 
 from flask import Flask, jsonify, redirect, render_template, request, url_for
@@ -15,21 +14,23 @@ from flask_login import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileRequired, FileField, FileAllowed
+from flask_wtf.file import FileAllowed, FileField, FileRequired
+from PIL import Image
+from flask_msearch import Search
+from werkzeug.utils import secure_filename
 from wtforms import (
     BooleanField,
     EmailField,
+    FileField,
+    FloatField,
     IntegerField,
     PasswordField,
     SelectField,
     StringField,
     SubmitField,
-    FileField,
-    FloatField,
     TextAreaField,
 )
 from wtforms.validators import DataRequired, Length, ValidationError
-from werkzeug.utils import secure_filename
 
 
 ######## APP INIT ########
@@ -39,8 +40,10 @@ Bootstrap5(app)
 app.config["SECRET_KEY"] = "secret"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["WHOOSH_BASE"] = "whoosh"
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
+search = Search(app, db)
 
 
 ######## LOGIN MANAGER ########
@@ -121,6 +124,8 @@ class User(db.Model, UserMixin):
 
 
 class Item(db.Model):
+    __searchable__ = ["name", "description"]
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     name = db.Column(db.String(100), nullable=False)
@@ -144,7 +149,9 @@ class Item(db.Model):
 
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    transaction_id = db.Column(db.Integer, db.ForeignKey("transaction.id"), nullable=False)
+    transaction_id = db.Column(
+        db.Integer, db.ForeignKey("transaction.id"), nullable=False
+    )
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -175,6 +182,7 @@ class Transaction(db.Model):
     def __repr__(self):
         return f"Transaction(user_id={self.user_id},vendor_id={self.vendor_id},item_id={self.item_id},value={self.value},date_transacted='{self.date_transacted}')"
 
+######## INDEXING ######## 
 
 ######## FORMS ########
 
@@ -346,12 +354,13 @@ def render_forget():
 
 @app.route("/home")
 def render_home():
-    form = SearchForm()
+    search_form = SearchForm()
     items = Item.query.filter_by(status="available").limit(4).all()
     # NOTE : pretend r_items is a long list of reccomended items
     r_items = items + items
     f_items = items
     l_items = []
+
     if current_user.is_authenticated:
         for like in current_user.liked:
             item = Item.query.filter_by(id=like.item_id).first()
@@ -361,7 +370,7 @@ def render_home():
         f_items=f_items,
         r_items=r_items,
         l_items=l_items,
-        form=form,
+        search_form=search_form,
     )
 
 
@@ -553,7 +562,7 @@ def render_profile(user_id):
         description_form=description_form,
         len_of_L_items=len_of_L_items,
         reviews=reviews,
-        user=user
+        user=user,
     )
 
 
@@ -568,13 +577,26 @@ def render_review(transaction_id):
         rating = form.rating.data
         comment = form.comment.data
         review = Review(
-            user_id=user_id, recipient_id=recipient_id, rating=rating, comment=comment, transaction_id=transaction_id
+            user_id=user_id,
+            recipient_id=recipient_id,
+            rating=rating,
+            comment=comment,
+            transaction_id=transaction_id,
         )
         db.session.add(review)
         db.session.commit()
         return redirect(url_for("render_home"))
 
     return render_template("review.html", form=form, search_form=search_form)
+
+
+@app.route("/search")
+def render_search():
+    search_form = SearchForm()
+    search = request.args.get("search")
+    items = Item.query.msearch(search,fields=['name','description'])
+    count_of_items = len(list(items))
+    return render_template("search.html", search_form=search_form, items=items, search=search, count_of_items=count_of_items)
 
 
 @app.route("/logout")
@@ -586,7 +608,7 @@ def logout():
 @app.route("/like/<int:item_id>/<action>")
 @login_required
 def like_action(item_id, action):
-    item = Item.query.filter_by(id=item_id).first()
+    item = Item.query.filter(id=item_id).first()
     if action == "like":
         current_user.like_item(item)
         db.session.commit()
