@@ -47,18 +47,16 @@ Bootstrap5(app)
 app.config["SECRET_KEY"] = "secret"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config['MAIL_SERVER']='smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = 'fishe8861@gmail.com'
-app.config['MAIL_PASSWORD'] = 'fishe87654321'
-app.config['MAIL_SUPPRESS_SEND'] = False
-app.config['TESTING'] = False
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USE_TLS"] = False
+app.config["MAIL_USE_SSL"] = True
+app.config["MAIL_USERNAME"] = "fishe8861@gmail.com"
+app.config["MAIL_PASSWORD"] = "fishe87654321"
+app.config["MAIL_SUPPRESS_SEND"] = False
+app.config["TESTING"] = False
 # app.config["WHOOSH_BASE"] = "whoosh"
-db = SQLAlchemy(app, session_options={
-    "expire_on_commit": False
-})
+db = SQLAlchemy(app, session_options={"expire_on_commit": False})
 login_manager = LoginManager(app)
 search = Search(app, db)
 mail = Mail(app)
@@ -78,6 +76,7 @@ def unauthorized_callback():
 
 
 ######## MODELS ########
+
 
 class User(db.Model, UserMixin):
     __searchable__ = ["username", "description"]
@@ -104,6 +103,15 @@ class User(db.Model, UserMixin):
     )
     liked = db.relationship(
         "ItemLike", foreign_keys="ItemLike.user_id", backref="user", lazy=True
+    )
+    following = db.relationship(
+        "UserFollow", foreign_keys="UserFollow.user_id", backref="following", lazy=True
+    )
+    followers = db.relationship(
+        "UserFollow",
+        foreign_keys="UserFollow.recipient_id",
+        backref="follower",
+        lazy=True,
     )
 
     @property
@@ -137,6 +145,23 @@ class User(db.Model, UserMixin):
         return (
             ItemLike.query.filter(
                 ItemLike.user_id == self.id, ItemLike.item_id == item.id
+            ).count()
+            > 0
+        )
+
+    def follow_user(self, user):
+        if not self.has_followed_user(user):
+            follow = UserFollow(user_id=self.id, recipient_id=user.id)
+            db.session.add(follow)
+
+    def unfollow_user(self, user):
+        if self.has_followed_user(user):
+            UserFollow.query.filter_by(user_id=self.id, recipient_id=user.id).delete()
+
+    def has_followed_user(self, user):
+        return (
+            UserFollow.query.filter(
+                UserFollow.user_id == self.id, UserFollow.recipient_id == user.id
             ).count()
             > 0
         )
@@ -190,6 +215,15 @@ class ItemLike(db.Model):
         return f"ItemLike(user_id={self.user_id},item_id={self.item_id})"
 
 
+class UserFollow(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    def __repr__(self):
+        return f"UserFollow(user_id={self.user_id},recipient_id={self.recipient_id})"
+
+
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -201,10 +235,12 @@ class Transaction(db.Model):
     def __repr__(self):
         return f"Transaction(user_id={self.user_id},vendor_id={self.vendor_id},item_id={self.item_id},value={self.value},date_transacted='{self.date_transacted}')"
 
+
 class PasswordPin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     pin = db.Column(db.Integer, nullable=False)
+
 
 ######## FORMS ########
 
@@ -252,7 +288,8 @@ class ForgetForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     search = StringField(
-        validators=[DataRequired()], render_kw={"placeholder": "Enter Search", "style":"height: 100%;"}
+        validators=[DataRequired()],
+        render_kw={"placeholder": "Enter Search", "style": "height: 100%;"},
     )
     submit = SubmitField("Search")
 
@@ -328,7 +365,15 @@ class ReviewForm(FlaskForm):
 
 
 class PinForm(FlaskForm):
-    pin = IntegerField("Pin", validators=[DataRequired(), NumberRange(min=100000, max=999999, message="Please enter a 6 digit number")])
+    pin = IntegerField(
+        "Pin",
+        validators=[
+            DataRequired(),
+            NumberRange(
+                min=100000, max=999999, message="Please enter a 6 digit number"
+            ),
+        ],
+    )
     submit = SubmitField("Submit")
 
     def validate_pin(self, pin):
@@ -337,9 +382,17 @@ class PinForm(FlaskForm):
         if pin.data != real_pin.pin:
             raise ValidationError(message="You have entered the wrong pin")
 
+
 class ResetPasswordForm(FlaskForm):
-    password = StringField("Password", validators=[DataRequired(), Length(8, 30, message="Your password's length should be between 8 to 30")])
+    password = StringField(
+        "Password",
+        validators=[
+            DataRequired(),
+            Length(8, 30, message="Your password's length should be between 8 to 30"),
+        ],
+    )
     submit = SubmitField("Reset")
+
 
 ######## ROUTES ########
 
@@ -390,7 +443,12 @@ def render_forget():
         db.session.add(real_pin)
         db.session.commit()
         with app.app_context():
-            msg = Message(subject="Forget password", sender=app.config.get("MAIL_USERNAME"), recipients=[str(email)], body=six_pin)
+            msg = Message(
+                subject="Forget password",
+                sender=app.config.get("MAIL_USERNAME"),
+                recipients=[str(email)],
+                body=six_pin,
+            )
             mail.send(msg)
         return redirect(url_for("render_pin", user_id=user.id))
     return render_template("forget.html", form=form)
@@ -561,6 +619,10 @@ def render_profile(user_id):
         User.query.filter_by(id=review.user_id).first() for review in reviews
     ]
     reviews = list(zip(review_authors, reviews))
+    following = [User.query.filter_by(id=follow.recipient_id).first() for follow in user.following]
+    followers = [User.query.filter_by(id=follow.user_id).first() for follow in user.followers]
+    count_of_following = len(list(following))
+    count_of_followers = len(list(followers))
 
     if pfp_form.validate_on_submit():
         ### SAVE FILE ###
@@ -607,6 +669,10 @@ def render_profile(user_id):
         len_of_L_items=len_of_L_items,
         reviews=reviews,
         user=user,
+        count_of_followers=count_of_followers,
+        count_of_following=count_of_following,
+        followers=followers,
+        following=following
     )
 
 
@@ -640,9 +706,10 @@ def render_search():
     search = request.args.get("search")
     items = Item.query.msearch(search, fields=["name", "description"])
     users = User.query.msearch(search, fields=["username", "description"])
+    users = [user for user in users if user != current_user]
     count_of_items = len(list(items))
     count_of_users = len(list(users))
-    item_ids = '-'.join([str(item.id) for item in items])
+    item_ids = "-".join([str(item.id) for item in items])
     return render_template(
         "search.html",
         users=users,
@@ -653,6 +720,7 @@ def render_search():
         count_of_users=count_of_users,
         item_ids=item_ids,
     )
+
 
 @app.route("/search/<string:search>/<string:item_ids>/<string:category>")
 def render_search_by_category(search, item_ids, category):
@@ -669,8 +737,9 @@ def render_search_by_category(search, item_ids, category):
         items=items,
         search=search,
         count_of_items=count_of_items,
-        item_ids=item_ids
+        item_ids=item_ids,
     )
+
 
 @app.route("/analytics")
 def render_analytics():
@@ -728,12 +797,14 @@ def render_analytics():
         total_items=total_items,
     )
 
+
 @app.route("/pin/<int:user_id>", methods=["GET", "POST"])
 def render_pin(user_id):
     pin_form = PinForm()
     if pin_form.validate_on_submit():
         return redirect(url_for("render_reset_password", user_id=user_id))
     return render_template("password_pin.html", pin_form=pin_form)
+
 
 @app.route("/pin/<int:user_id>/reset", methods=["GET", "POST"])
 def render_reset_password(user_id):
@@ -744,7 +815,9 @@ def render_reset_password(user_id):
         user.password = new_password
         db.session.commit()
         return redirect(url_for("render_login"))
-    return render_template("reset_password.html", reset_password_form=reset_password_form)
+    return render_template(
+        "reset_password.html", reset_password_form=reset_password_form
+    )
 
 
 @app.route("/logout")
@@ -763,6 +836,18 @@ def like_action(item_id, action):
         db.session.commit()
     if action == "unlike":
         current_user.unlike_item(item)
+        db.session.commit()
+    return redirect(request.referrer)
+
+@app.route("/follow/<int:recipient_id>/<action>")
+@login_required
+def follow_action(recipient_id, action):
+    user = User.query.filter(User.id == recipient_id).first()
+    if action == "follow":
+        current_user.follow_user(user)
+        db.session.commit()
+    if action == "unfollow":
+        current_user.unfollow_user(user)
         db.session.commit()
     return redirect(request.referrer)
 

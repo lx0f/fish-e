@@ -39,7 +39,7 @@
     <div class="row">
         {% for user in users %}
         <div class="col-md-12">
-            {{ user_profile(user) }}
+            {{ user_profile(user, current_user) }}
         </div>
         {% endfor %}
     </div>
