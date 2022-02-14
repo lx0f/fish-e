@@ -26,33 +26,33 @@
             {{ form.search(class_="form-control me-2 align-middle") }}
             {{ form.submit(class_="btn btn-primary") }}
         </form>
-        <div class="d-flex row">
+        <div class="d-flex align-items-center">
             {% if current_user.is_authenticated %}
-            <div class="col">
-                <a href="/myitems"><button class="btn btn-primary">Items</button></a>
-            </div>
-            <div class="col">
-                <a href="/likes"><button class="btn btn-primary">Likes</button></a>
-            </div>
-            <div class="col">
-                <a href="/logout"><button class="btn btn-primary">Logout</button></a>
-            </div>
+            <ul class="list-inline mb-0">
+                <li class="list-inline-item"><a href="/myitems"><button class="btn btn-primary">Items</button></a></li>
+                <li class="list-inline-item"><a href="/likes"><button class="btn btn-primary">Likes</button></a></li>
+                <li class="list-inline-item"><a href="/logout"><button class="btn btn-primary">Logout</button></a></li>
+                <li class="list-inline-item"><a href="/profile/{{ current_user.id }}"><img
+                    src="{{ url_for('static', filename='img/profile/' + current_user.image_file) }}" alt="pfp"
+                    class="rounded-circle" width="38px"></a></li>
+            </ul>
+            
+
             <!-- NOTE: avatar picture aspect ratio has to be 1:1-->
             <!-- default profile picture: https://mdbcdn.b-cdn.net/img/new/avatars/2.webp -->
-            <div class="col">
-                <a href="/profile/{{ current_user.id }}"><img
-                        src="{{ url_for('static', filename='img/profile/' + current_user.image_file) }}" alt="pfp"
-                        class="rounded-circle" width="38px"></a>
-            </div>
-            {% else %}
-            <div class="col">
-                <a href="/login"><button class="btn btn-primary">Login</button></a>
-            </div>
-            <div class="col">
-                <a href="/register"><button class="btn btn-primary">Register</button></a>
-            </div>
-            {% endif %}
+
+            
         </div>
+        {% else %}
+
+
+        <a href="/login"><button class="btn btn-primary">Login</button></a>
+
+
+        <a href="/register"><button class="btn btn-primary">Register</button></a>
+
+        {% endif %}
+    </div>
     </div>
 </nav>
 {% endmacro %}
