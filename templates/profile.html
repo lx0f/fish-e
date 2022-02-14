@@ -64,12 +64,12 @@
                     </div>
                 </div>
             </div>
-            {% if user.description != None %}
             <div class="row">
                 <div class="col">
                     <div class="card">
                         <div class="card-title text-center">
                             <strong>About Me</strong>
+                            {% if user.description != None %}
                             <br>
                             {% if user.description %}
                             <small>{{ user.description }}</small>
@@ -84,13 +84,17 @@
                                     me</small></a>
                             {% endif %}
                             {% endif %}
+                            {% else %}
+                            <br>
+                            <a href="" data-bs-toggle="modal" data-bs-target="#descriptionModal"><small>add about
+                                    me</small></a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
-        <div class="accordion col-md-8" id="accordionExample">
+        <div class="accordion col-md-8 mt-3" id="accordionExample">
             <div class="accordion-item">
                 <h2 class="accordion-header" id="headingOne">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -152,6 +156,7 @@
             </div>
         </div>
     </div>
+    {% if reviews %}
     <div class="row mx-5">
         <div class="col">
             <div class="card">
@@ -167,6 +172,7 @@
 
         </div>
     </div>
+    {% endif %}
 </div>
 
 <!-- ### ---------------- ### -->
