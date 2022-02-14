@@ -1,7 +1,11 @@
 # @redears-lambda TODO: create dummy items, transactions, and likes
+from base64 import encode
+from encodings import utf_8
 import json
 from datetime import datetime
 from uuid import uuid4
+from passlib.hash import pbkdf2_sha256
+import hashlib
 
 from flask_mail import Mail, Message
 import numpy as np
@@ -250,6 +254,8 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired(), Length(8, 150)])
     remember = BooleanField("Remember me")
     submit = SubmitField("Login")
+    
+    
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
@@ -257,9 +263,11 @@ class LoginForm(FlaskForm):
             raise ValidationError("Wrong Username or Password. Please check again.")
 
     def validate_password(self, password):
-        user = User.query.filter_by(username=self.username.data).first()
-        if user and (user.password != password.data):
-            raise ValidationError("Wrong Username or Password. Please check again.")
+       user = User.query.filter_by(username=self.username.data).first()
+       if user and (user.password != password.data):
+           raise ValidationError("Wrong Username or Password. Please check again.") 
+    #####password2 = pbkdf2_sha256.hash("Password")
+
 
 
 class RegisterForm(FlaskForm):
@@ -409,7 +417,7 @@ def render_login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user and (user.password == form.password.data):
+        if user and (user.password == pbkdf2_sha256.verify(form.password.data)):
             login_user(user, remember=form.remember.data)
             return redirect("home")
     return render_template("login.html", form=form)
@@ -423,10 +431,11 @@ def render_register():
     if form.validate_on_submit():
         username = form.username.data
         email = form.email.data
-        password = form.password.data
+        password = pbkdf2_sha256.hash(form.password.data)
         user = User(username=username, email=email, password=password)
         db.session().add(user)
         db.session().commit()
+        
         return redirect("login")
 
     return render_template("register.html", form=form)
