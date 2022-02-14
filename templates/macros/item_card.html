@@ -19,7 +19,7 @@
         </h5>
         <p class="card-text">{{ item.description }}</p>
         <!-- TODO : make the href change dynamically -->
-        <a href="/item/{{ item.id }}" class="btn btn-primary">Details</a>
+        <a href="/item/{{ item.id }}" class="btn btn-primary mx-0">Details</a>
         {% if current_user.is_authenticated %}
         {% if not current_user.has_liked_item(item) %}
         <a href="{{ url_for('like_action', item_id=item.id, action='like') }}" class="btn btn-primary">Like</a>

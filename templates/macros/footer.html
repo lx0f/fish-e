@@ -1,0 +1,43 @@
+{% macro footer() %}
+
+<footer class="bd-footer py-5 mt-5 bg-light">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-3 mb-3">
+                <a class="d-inline-flex align-items-center mb-2 link-dark text-decoration-none" href="/"
+                    aria-label="Bootstrap">
+                    <img src="{{ url_for('static', filename='img/iHawker.sg.png') }}" class="rounded-circle"
+                        style="height: 50px; width: auto;" alt="">
+                    <br>
+                    <title>Fish-E</title>
+                    <span class="mx-1 fs-5">Fish-E</span>
+                </a>
+                <ul class="list-unstyled small text-muted">
+                    <li class="mb-2">Created with love and care by the development team: Luth, Hakeem, Aidan, Wayne,
+                        to support dying aquatic stores due to covid-19 and its inpact in retail shopping
+                    </li>
+                </ul>
+            </div>
+            <div class="col-6 col-lg-2 offset-lg-1 mb-3">
+                <h5>Links</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/">Home</a></li>
+                    <li class="mb-2"><a href="/likes">Likes</a></li>
+                    <li class="mb-2"><a href="/myitems">My Item</a></li>
+                    <li class="mb-2"><a href="/profile/{{ current_user.id }}">Profile</a></li>
+                    <li class="mb-2"><a href="/analytics">Analytics</a></li>
+                    <li class="mb-2"><a href="/logout">Logout</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-lg-2 mb-3">
+                <h5>Source</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="https://github.com/redears-lambda/plus-ultra">Github Repo</a></li>
+                    <li class="mb-2"><a href="https://github.com/redears-lambda/plus-ultra/issues">Issues</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
+{% endmacro %}
