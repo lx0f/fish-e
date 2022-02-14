@@ -457,10 +457,10 @@ def render_forget():
 @app.route("/home")
 def render_home():
     search_form = SearchForm()
-    items = Item.query.filter_by(status="available").limit(4).all()
+    items = Item.query.filter_by(status="available").all()
     # NOTE : pretend r_items is a long list of reccomended items
-    r_items = items + items
-    f_items = items
+    r_items = items[4:]
+    f_items = items[:4]
     l_items = []
 
     if current_user.is_authenticated:
