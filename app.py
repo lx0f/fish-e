@@ -638,14 +638,33 @@ def render_search():
     search = request.args.get("search")
     items = Item.query.msearch(search, fields=["name", "description"])
     count_of_items = len(list(items))
+    item_ids = '-'.join([str(item.id) for item in items])
     return render_template(
         "search.html",
         search_form=search_form,
         items=items,
         search=search,
         count_of_items=count_of_items,
+        item_ids=item_ids,
     )
 
+@app.route("/search/<string:search>/<string:item_ids>/<string:category>")
+def render_search_by_category(search, item_ids, category):
+    search_form = SearchForm()
+    item_ids = item_ids.split("-")
+    items = [Item.query.filter_by(id=int(item_id)).first() for item_id in item_ids]
+    item_ids = "-".join(item_ids)
+    if category != "All":
+        items = [item for item in items if item.category == category]
+    count_of_items = len(list(items))
+    return render_template(
+        "search.html",
+        search_form=search_form,
+        items=items,
+        search=search,
+        count_of_items=count_of_items,
+        item_ids=item_ids
+    )
 
 @app.route("/analytics")
 def render_analytics():

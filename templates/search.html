@@ -8,6 +8,26 @@
     <h3><strong>Search Results for '<span class="text-primary">{{ search }}</span>'</strong> <small>({{ count_of_items
             }})</small></h3>
     <div class="row">
+        <div class="col-md-6">
+            <!-- CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilities"] -->
+            <small><strong>Filter by</strong></small>
+            <ul class="list-inline">
+                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/All"
+                        class="btn btn-sm btn-primary m-0">All</a></li>
+                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/Fish"
+                        class="btn btn-sm btn-primary m-0">Fish</a></li>
+                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/Food"
+                        class="btn btn-sm btn-primary m-0">Food</a></li>
+                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/Tank"
+                        class="btn btn-sm btn-primary m-0">Tank</a></li>
+                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/Decoration"
+                        class="btn btn-sm btn-primary m-0">Decoration</a></li>
+                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/Utilities"
+                        class="btn btn-sm btn-primary m-0">Utilities</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
         {% for item in items %}
         <div class="col-md-3">
             {{ item_card(item, current_user) }}
