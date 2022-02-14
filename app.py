@@ -315,6 +315,11 @@ class ForgetForm(FlaskForm):
     email = EmailField("Email", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if not user:
+            raise ValidationError("No user with that email exists")
+
 
 class SearchForm(FlaskForm):
     search = StringField(
