@@ -30,7 +30,7 @@ block title %}home{% endblock title %}
                         </div>
                         <div class="row">
                             <div class="col">
-                                <h6>Posted on {{ item.date_posted.date() }}</h3>
+                                <h6>Posted {{ item.format_date_difference() }}</h3>
                             </div>
                         </div>
                         <div class="row">
