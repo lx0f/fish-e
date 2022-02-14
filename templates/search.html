@@ -1,16 +1,16 @@
 {% from 'macros/navbar.html' import navbar %}
+{% from 'macros/user_profile.html' import user_profile %}
 {% from 'macros/item_card.html' import item_card %}
 {% extends 'base.html' %}
 {% block title %}search{% endblock title %}
 {% block content %}
 {{ navbar(search_form, current_user) }}
 <div class="container">
-    <h3><strong>Search Results for '<span class="text-primary">{{ search }}</span>'</strong> <small>({{ count_of_items
-            }})</small></h3>
+    <h3><strong>Search Results for '<span class="text-primary">{{ search }}</span>'</strong> </h3>
     <div class="row">
         <div class="col-md-6">
             <!-- CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilities"] -->
-            <small><strong>Filter by</strong></small>
+            <h5><strong>Filter by</strong></h5>
             <ul class="list-inline">
                 <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/All"
                         class="btn btn-sm btn-primary m-0">All</a></li>
@@ -27,10 +27,19 @@
             </ul>
         </div>
     </div>
+    <h5><strong>Items</strong><small>({{ count_of_items }})</small></h5>
     <div class="row">
         {% for item in items %}
         <div class="col-md-3">
             {{ item_card(item, current_user) }}
+        </div>
+        {% endfor %}
+    </div>
+    <h5><strong>Users</strong><small>({{ count_of_users }})</small></h5>
+    <div class="row">
+        {% for user in users %}
+        <div class="col-md-12">
+            {{ user_profile(user) }}
         </div>
         {% endfor %}
     </div>

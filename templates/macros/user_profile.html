@@ -1,0 +1,27 @@
+{% macro user_profile(user) %}
+<div class="card">
+    <div class="card-body d-flex align-items-center">
+        <img src="{{ url_for('static', filename='img/profile/' + user.image_file) }}" class="rounded-circle me-2"
+            style="height:50px; width:auto" alt="">
+        <div class="d-flex flex-column me-3">
+            <span>
+                <h5 class="m-0">@{{ user.username }}
+                    {% if user.rating == "No reviews yet" %}
+                    <small class="text-muted">(Unrated)</small>
+                    {% else %}
+                    <small class="text-muted">(Rating: {{ user.rating }}/5)</small>
+                    {% endif %}
+                </h5>
+                <small class="text-muted">joined
+                    on
+                    {{ user.date_joined.date() }}</small>
+            </span>
+        </div>
+        <ul class="list-inline mb-0">
+            <li class="list-inline-item"><a class="btn btn-primary btn-sm p-1 m-0" href="">Follow</a></li>
+            <li class="list-inline-item"><a class="btn btn-secondary btn-sm p-1 m-0"
+                    href="/profile/{{ user.id }}">Details</a></li>
+        </ul>
+    </div>
+</div>
+{% endmacro %}

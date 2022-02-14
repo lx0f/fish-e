@@ -80,6 +80,8 @@ def unauthorized_callback():
 ######## MODELS ########
 
 class User(db.Model, UserMixin):
+    __searchable__ = ["username", "description"]
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -637,14 +639,18 @@ def render_search():
     search_form = SearchForm()
     search = request.args.get("search")
     items = Item.query.msearch(search, fields=["name", "description"])
+    users = User.query.msearch(search, fields=["username", "description"])
     count_of_items = len(list(items))
+    count_of_users = len(list(users))
     item_ids = '-'.join([str(item.id) for item in items])
     return render_template(
         "search.html",
+        users=users,
         search_form=search_form,
         items=items,
         search=search,
         count_of_items=count_of_items,
+        count_of_users=count_of_users,
         item_ids=item_ids,
     )
 
