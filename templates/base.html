@@ -1,3 +1,4 @@
+{% from 'macros/footer.html' import footer %}
 <!doctype html>
 <html lang="en">
 
@@ -25,6 +26,7 @@
     <!-- Optional JavaScript -->
     {{ bootstrap.load_js() }}
     {% endblock %}
+    {{ footer() }}
 </body>
 
 </html>

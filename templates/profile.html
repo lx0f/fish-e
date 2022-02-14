@@ -64,6 +64,7 @@
                     </div>
                 </div>
             </div>
+            {% if user.description != None %}
             <div class="row">
                 <div class="col">
                     <div class="card">
@@ -87,6 +88,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
         <div class="accordion col-md-8" id="accordionExample">
             <div class="accordion-item">
@@ -101,7 +103,7 @@
                     <div class="accordion-body overflow-scroll">
                         {% if L_items %}
                         {% for item in L_items %}
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             {{ item_card(item, current_user) }}
                         </div>
                         {% endfor %}
