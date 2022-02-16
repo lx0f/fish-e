@@ -478,7 +478,7 @@ def render_home():
     search_form = SearchForm()
     items = Item.query.filter_by(status="available").all()
     # NOTE : pretend r_items is a long list of reccomended items
-    r_items = items[4:]
+    r_items = items
     f_items = items[:4]
     l_items = []
 
