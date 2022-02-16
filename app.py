@@ -85,11 +85,9 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     description = db.Column(db.String(500), nullable=True)
-    image_file = db.Column(db.String(20), nullable=False,
-                           default="default.jpg")
+    image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
     password = db.Column(db.String(60), nullable=False)
-    date_joined = db.Column(db.DateTime, nullable=False,
-                            default=datetime.utcnow)
+    date_joined = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     items = db.relationship("Item", backref="author", lazy=True)
     bought = db.relationship(
         "Transaction", foreign_keys="Transaction.user_id", backref="buyer", lazy=True
@@ -158,8 +156,7 @@ class User(db.Model, UserMixin):
 
     def unfollow_user(self, user):
         if self.has_followed_user(user):
-            UserFollow.query.filter_by(
-                user_id=self.id, recipient_id=user.id).delete()
+            UserFollow.query.filter_by(user_id=self.id, recipient_id=user.id).delete()
 
     def has_followed_user(self, user):
         return (
@@ -179,10 +176,8 @@ class Item(db.Model):
     description = db.Column(db.String(500), nullable=False)
     category = db.Column(db.String(20), nullable=True)
     base_price = db.Column(db.Float, nullable=False)
-    image_file = db.Column(
-        db.String(200), nullable=False, default="default.jpg")
-    date_posted = db.Column(db.DateTime, nullable=False,
-                            default=datetime.utcnow)
+    image_file = db.Column(db.String(200), nullable=False, default="default.jpg")
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     likes = db.relationship("ItemLike", backref="item", lazy=True)
     status = db.Column(
         db.String(10), nullable=False, default="available"
@@ -192,11 +187,11 @@ class Item(db.Model):
         if self.age.total_seconds() < 60:
             return "{} seconds ago".format(int(self.age.total_seconds()))
         elif self.age.total_seconds() < 3600:
-            return "{} minutes ago".format(int(self.age.total_seconds()/60))
+            return "{} minutes ago".format(int(self.age.total_seconds() / 60))
         elif self.age.total_seconds() < 86400:
-            return "{} hours ago".format(int(self.age.total_seconds()/(60*60)))
+            return "{} hours ago".format(int(self.age.total_seconds() / (60 * 60)))
         elif self.age.total_seconds() < 604800:
-            return "{} days ago".format(int(self.age.total_seconds()/(60*60*24)))
+            return "{} days ago".format(int(self.age.total_seconds() / (60 * 60 * 24)))
 
     @property
     def age(self):
@@ -216,10 +211,8 @@ class Review(db.Model):
         db.Integer, db.ForeignKey("transaction.id"), nullable=False
     )
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    recipient_id = db.Column(
-        db.Integer, db.ForeignKey("user.id"), nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False,
-                            default=datetime.utcnow)
+    recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.String(500), nullable=False)
 
@@ -239,8 +232,7 @@ class ItemLike(db.Model):
 class UserFollow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    recipient_id = db.Column(
-        db.Integer, db.ForeignKey("user.id"), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
     def __repr__(self):
         return f"UserFollow(user_id={self.user_id},recipient_id={self.recipient_id})"
@@ -252,8 +244,7 @@ class Transaction(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey("item.id"), nullable=False)
     vendor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     value = db.Column(db.Float, nullable=False)
-    date_transacted = db.Column(
-        db.DateTime, nullable=False, default=datetime.utcnow)
+    date_transacted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):
         return f"Transaction(user_id={self.user_id},vendor_id={self.vendor_id},item_id={self.item_id},value={self.value},date_transacted='{self.date_transacted}')"
@@ -269,32 +260,26 @@ class PasswordPin(db.Model):
 
 
 class LoginForm(FlaskForm):
-    username = StringField("Username", validators=[
-                           DataRequired(), Length(1, 20)])
-    password = PasswordField("Password", validators=[
-                             DataRequired(), Length(8, 150)])
+    username = StringField("Username", validators=[DataRequired(), Length(1, 20)])
+    password = PasswordField("Password", validators=[DataRequired(), Length(8, 150)])
     remember = BooleanField("Remember me")
     submit = SubmitField("Login")
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user and (user.password != self.password.data):
-            raise ValidationError(
-                "Wrong Username or Password. Please check again.")
+            raise ValidationError("Wrong Username or Password. Please check again.")
 
     def validate_password(self, password):
         user = User.query.filter_by(username=self.username.data).first()
         if user and (user.password != password.data):
-            raise ValidationError(
-                "Wrong Username or Password. Please check again.")
+            raise ValidationError("Wrong Username or Password. Please check again.")
 
 
 class RegisterForm(FlaskForm):
-    username = StringField("Username", validators=[
-                           DataRequired(), Length(1, 20)])
+    username = StringField("Username", validators=[DataRequired(), Length(1, 20)])
     email = EmailField("Email", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[
-                             DataRequired(), Length(8, 150)])
+    password = PasswordField("Password", validators=[DataRequired(), Length(8, 150)])
     submit = SubmitField("Register")
 
     def validate_username(self, username):
@@ -307,8 +292,7 @@ class RegisterForm(FlaskForm):
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user:
-            raise ValidationError(
-                "That email is taken. Please choose a different one.")
+            raise ValidationError("That email is taken. Please choose a different one.")
 
 
 class ForgetForm(FlaskForm):
@@ -330,8 +314,7 @@ class SearchForm(FlaskForm):
 
 
 class PaymentForm(FlaskForm):
-    MONTHS = ["01", "02", "03", "04", "05",
-              "06", "07", "08", "09", "10", "11", "12"]
+    MONTHS = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
     YEARS = [str(i) for i in range(2023, 2031)]
     name = StringField(
         "Name",
@@ -343,10 +326,8 @@ class PaymentForm(FlaskForm):
         validators=[DataRequired(), Length(16)],
         render_kw={"placeholder": "0000 0000 0000 0000"},
     )
-    month = SelectField("Expiry Month", validators=[
-                        DataRequired()], choices=MONTHS)
-    year = SelectField("Expiry Year", validators=[
-                       DataRequired()], choices=YEARS)
+    month = SelectField("Expiry Month", validators=[DataRequired()], choices=MONTHS)
+    year = SelectField("Expiry Year", validators=[DataRequired()], choices=YEARS)
     cvv = IntegerField("CVV", validators=[DataRequired(3)])
     submit = SubmitField("Enter")
 
@@ -355,12 +336,10 @@ class AddItemForm(FlaskForm):
     CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilities"]
     image_file = FileField(
         "Item Image",
-        validators=[FileRequired(), FileAllowed(
-            ["jpg", "png"], "Images Only")],
+        validators=[FileRequired(), FileAllowed(["jpg", "png"], "Images Only")],
     )
     name = StringField("Item Name", validators=[DataRequired()])
-    category = SelectField("Category", validators=[
-                           DataRequired()], choices=CATEGORIES)
+    category = SelectField("Category", validators=[DataRequired()], choices=CATEGORIES)
     description = TextAreaField("Description", validators=[DataRequired()])
     base_price = FloatField("Price", validators=[DataRequired()])
     add = SubmitField("Add")
@@ -369,8 +348,7 @@ class AddItemForm(FlaskForm):
 class ProfilePictureForm(FlaskForm):
     image_file = FileField(
         "New Profile Picture",
-        validators=[FileRequired(), FileAllowed(
-            ["jpg", "png"], "Images Only")],
+        validators=[FileRequired(), FileAllowed(["jpg", "png"], "Images Only")],
     )
     apply = SubmitField("Apply")
 
@@ -396,8 +374,7 @@ class DescriptionForm(FlaskForm):
 
 class ReviewForm(FlaskForm):
     choices = [1, 2, 3, 4, 5]
-    rating = SelectField("Rating", validators=[
-                         DataRequired()], choices=choices)
+    rating = SelectField("Rating", validators=[DataRequired()], choices=choices)
     comment = TextAreaField(
         "Comment",
         validators=[DataRequired(), Length(5, 500)],
@@ -607,8 +584,7 @@ def render_my_items():
         Item.query.filter_by(id=transaction.item_id).first()
         for transaction in s_transactions
     ]
-    L_items = Item.query.filter_by(
-        user_id=current_user.id, status="available").all()
+    L_items = Item.query.filter_by(user_id=current_user.id, status="available").all()
     return render_template(
         "my_item.html",
         search_form=search_form,
@@ -662,10 +638,13 @@ def render_profile(user_id):
         User.query.filter_by(id=review.user_id).first() for review in reviews
     ]
     reviews = list(zip(review_authors, reviews))
-    following = [User.query.filter_by(
-        id=follow.recipient_id).first() for follow in user.following]
-    followers = [User.query.filter_by(
-        id=follow.user_id).first() for follow in user.followers]
+    following = [
+        User.query.filter_by(id=follow.recipient_id).first()
+        for follow in user.following
+    ]
+    followers = [
+        User.query.filter_by(id=follow.user_id).first() for follow in user.followers
+    ]
     count_of_following = len(list(following))
     count_of_followers = len(list(followers))
 
@@ -717,7 +696,7 @@ def render_profile(user_id):
         count_of_followers=count_of_followers,
         count_of_following=count_of_following,
         followers=followers,
-        following=following
+        following=following,
     )
 
 
@@ -771,8 +750,7 @@ def render_search():
 def render_search_by_category(search, item_ids, category):
     search_form = SearchForm()
     item_ids = item_ids.split("-")
-    items = [Item.query.filter_by(id=int(item_id)).first()
-             for item_id in item_ids]
+    items = [Item.query.filter_by(id=int(item_id)).first() for item_id in item_ids]
     item_ids = "-".join(item_ids)
     if category != "All":
         items = [item for item in items if item.category == category]
@@ -798,14 +776,12 @@ def render_analytics():
     value_of_transactions = [transaction.value for transaction in sold]
     total_revenue = sum(value_of_transactions)
     total_items = len(value_of_transactions)
-    date_of_transactions = [transaction.date_transacted.date()
-                            for transaction in sold]
+    date_of_transactions = [transaction.date_transacted.date() for transaction in sold]
 
     revenue_over_time_df = pd.DataFrame(
         {"x": date_of_transactions, "y": value_of_transactions}
     )
-    ROT_data = [go.Bar(x=revenue_over_time_df["x"],
-                       y=revenue_over_time_df["y"])]
+    ROT_data = [go.Bar(x=revenue_over_time_df["x"], y=revenue_over_time_df["y"])]
     revenue_over_time_plot = json.dumps(ROT_data, cls=PlotlyJSONEncoder)
 
     CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilties"]
@@ -834,8 +810,7 @@ def render_analytics():
     revenue_by_category_df = pd.DataFrame(
         {"x": CATEGORIES, "y": list_of_revenue_by_category}
     )
-    RBC_data = [go.Bar(x=revenue_by_category_df["x"],
-                       y=revenue_by_category_df["y"])]
+    RBC_data = [go.Bar(x=revenue_by_category_df["x"], y=revenue_by_category_df["y"])]
     revenue_by_category_plot = json.dumps(RBC_data, cls=PlotlyJSONEncoder)
     return render_template(
         "analytics.html",
