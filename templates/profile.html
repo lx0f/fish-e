@@ -107,20 +107,23 @@
                 <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
                     data-bs-parent="#accordionExample">
                     <div class="accordion-body overflow-scroll">
-                        {% if L_items %}
-                        {% for item in L_items %}
-                        <div class="col-md-6">
-                            {{ item_card(item, current_user) }}
+                        <div class="row">
+
+                            {% if L_items %}
+                            {% for item in L_items %}
+                            <div class="col-md-6">
+                                {{ item_card(item, current_user) }}
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <u>No listed items yet</u>
+                            <br>
+                            {% if user == current_user %}
+                            <a href="/item/add"><button class="btn btn-sm btn-primary">Click here to add an
+                                    item</button></a>
+                            {% endif %}
+                            {% endif %}
                         </div>
-                        {% endfor %}
-                        {% else %}
-                        <u>No listed items yet</u>
-                        <br>
-                        {% if user == current_user %}
-                        <a href="/item/add"><button class="btn btn-sm btn-primary">Click here to add an
-                                item</button></a>
-                        {% endif %}
-                        {% endif %}
                     </div>
                 </div>
             </div>

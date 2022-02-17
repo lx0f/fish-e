@@ -25,34 +25,27 @@
                 <div class="col">
                     <div class="card">
                         <div class="card-header">
-
+                            Orders
                         </div>
                         <div class="card-body">
                             <table class="table">
                                 <thead>
-                                    <th scope="col">id</th>
-                                    <th scope="col">image</th>
-                                    <th scope="col">name</th>
-                                    <th scope="col">price</th>
-                                    <th scope="col">category</th>
-                                    <th scope="col">posted</th>
-                                    <th scope="col">likes</th>
-                                    <th scope="col"></th>
+                                    <tr>
+                                        <th scope="col">id</th>
+                                        <th scope="col">user id</th>
+                                        <th scope="col">item id</th>
+                                        <th scope="col">value</th>
+                                        <th scope="col">date</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                    {% for item in items %}
+                                    {% for transaction in transactions %}
                                     <tr>
-                                        <th scope="row">{{ item.id }}</th>
-                                        <td><img src="{{ url_for('static', filename='img/fish/' + item.image_file) }}"
-                                                style="height: 40px; width: auto;" alt=""></td>
-                                        <td>{{ item.name }}</td>
-                                        <td>${{ item.base_price }}</td>
-                                        <td>{{ item.category }}</td>
-                                        <td>{{ item.format_date_difference() }}</td>
-                                        <td>{{ item.like_count }}</td>
-                                        <td>
-                                            <a href="/item/delete/{{ item.id }}">delete</a>
-                                        </td>
+                                        <th scope="row">{{ transaction.id }}</th>
+                                        <td>{{ transaction.user_id }}</td>
+                                        <td>{{ transaction.item_id }}</td>
+                                        <td>{{ transaction.value }}</td>
+                                        <td>{{ transaction.date_transacted }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -66,30 +59,4 @@
 </div>
 
 
-<!-- Modal -->
-<div class="modal fade" id="add-single" tabindex="-1" aria-labelledby="add-single-label" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="add-single-label">Add Single</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" enctype="multipart/form-data">
-                    {{ item_form.csrf_token() }}
-                    {{ render_field(item_form.image_file) }}
-                    {{ render_field(item_form.name) }}
-                    {{ render_field(item_form.category) }}
-                    {{ render_field(item_form.description) }}
-                    {{ render_field(item_form.base_price) }}
-                    {{ render_field(item_form.add) }}
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock content %}

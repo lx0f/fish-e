@@ -980,6 +980,16 @@ def render_inventory():
         items=items
         )
 
+@app.route("/orders")
+def render_orders():
+    search_form = SearchForm()
+    transactions = current_user.sold
+    return render_template(
+        "orders.html",
+        search_form=search_form,
+        transactions=transactions
+        )
+
 
 @app.route("/logout")
 def logout():
@@ -1020,6 +1030,7 @@ def delete_item(item_id):
     vendor_id = Item.query.filter_by(id=item_id).first().user_id
     if current_user.id == vendor_id:
         Item.query.filter_by(id=item_id).delete()
+        ItemLike.query.filter_by(id=item_id).delete()
         db.session.commit()
     return redirect(request.referrer)
 
