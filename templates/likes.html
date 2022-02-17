@@ -11,7 +11,7 @@
             {% if l_items %}
             {{ my_likes(l_items, current_user) }}
             {% else %}
-            <h4>You have not liked any items yet</h4>
+            <h4 class="text-muted">You have not liked any items yet</h4>
             {{ reccommended_items(r_items, current_user) }}
             {% endif %}
         </div>

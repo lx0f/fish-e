@@ -1,5 +1,4 @@
 # @redears-lambda TODO: create dummy items, transactions, and likes
-from cProfile import label
 import json
 from datetime import datetime
 from uuid import uuid4
@@ -944,6 +943,44 @@ def render_reset_password(user_id):
     )
 
 
+@app.route("/inventory", methods=["GET", "POST"])
+def render_inventory():
+    search_form = SearchForm()
+    item_form = AddItemForm()
+    items = current_user.items
+
+    if item_form.validate_on_submit():
+
+        image_file_name = item_form.image_file.data.filename
+        file_extentsion = image_file_name[-3:]
+        name = item_form.name.data
+        category = item_form.category.data
+        description = item_form.description.data
+        base_price = item_form.base_price.data
+
+        unique_file_name = uuid4()
+        filename = secure_filename(f"{unique_file_name}.{file_extentsion}")
+        item_form.image_file.data.save(f"./static/img/fish/{filename}")
+        item = Item(
+            user_id=current_user.id,
+            name=name,
+            description=description,
+            category=category,
+            base_price=base_price,
+            image_file=filename,
+        )
+        db.session.add(item)
+        db.session.commit()
+        return redirect(request.referrer) 
+
+    return render_template(
+        "inventory.html",
+        search_form=search_form,
+        item_form=item_form,
+        items=items
+        )
+
+
 @app.route("/logout")
 def logout():
     logout_user()
@@ -973,6 +1010,16 @@ def follow_action(recipient_id, action):
         db.session.commit()
     if action == "unfollow":
         current_user.unfollow_user(user)
+        db.session.commit()
+    return redirect(request.referrer)
+
+
+@app.route("/item/delete/<int:item_id>")
+@login_required
+def delete_item(item_id):
+    vendor_id = Item.query.filter_by(id=item_id).first().user_id
+    if current_user.id == vendor_id:
+        Item.query.filter_by(id=item_id).delete()
         db.session.commit()
     return redirect(request.referrer)
 

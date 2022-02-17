@@ -11,40 +11,61 @@
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
-<div class="container">
+<div class="container-fluid">
     <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">Total Revenue this month</div>
-                <div class="card-body text-primary text-center"><strong class="display-1">${{ total_revenue }}</strong>
+        <div class="py-5 col-md-3 bg-light">
+            <!-- NAVIGATION -->
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item active">
+                    <a href="/inventory" class="nav-link">Inventory</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/orders" class="nav-link">Orders</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/analytics" class="nav-link">Analytics</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-9">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Total Revenue this month</div>
+                        <div class="card-body text-primary text-center"><strong class="display-1">${{ total_revenue
+                                }}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Total Items sold this month</div>
+                        <div class="card-body text-primary text-center"><strong class="display-1">{{ total_items
+                                }}</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">Total Items sold this month</div>
-                <div class="card-body text-primary text-center"><strong class="display-1">{{ total_items }}</strong>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">Revenue over time</div>
+                        <div class="card-body justify-content-center d-flex p-0" id="revenue-over-time"
+                            style="height: 300px">
+                            <!-- INSERT REVENUE OVER TIME PLOT HERE -->
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">Revenue over time</div>
-                <div class="card-body justify-content-center d-flex p-0" id="revenue-over-time" style="height: 300px">
-                    <!-- INSERT REVENUE OVER TIME PLOT HERE -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">Revenue by Category</div>
-                <div class="card-body justify-content-center d-flex p-0" id="revenue-by-category"
-                    style="height: 300px;">
-                    <!-- INSERT REVENUE BY CATEGORY PLOT HERE -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">Revenue by Category</div>
+                        <div class="card-body justify-content-center d-flex p-0" id="revenue-by-category"
+                            style="height: 300px;">
+                            <!-- INSERT REVENUE BY CATEGORY PLOT HERE -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
