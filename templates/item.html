@@ -14,72 +14,78 @@ block title %}home{% endblock title %}
     </div>
     <div class="row g-3 mx-5">
         <div class="col-md-8">
-            <div class="row">
-                <div class="col">
-                    <div class="card" style="height: 100%;">
-                        <!-- ITEM BRIEF DESCRIPTION -->
-                        <div class="row">
-                            <div class="col">
-                                <h3>{{ item.name }}</h3>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <h3>Price: ${{ item.price }}</h3>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <h6>Posted {{ item.format_date_difference() }}</h3>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <!-- ITEM IN DEPTH DESCRIPTION -->
-                                <h3>Description</h3>
-                                <p>{{ item.description }}</p>
-                            </div>
-                            <div class="col">
-                                <span style="position: absolute; bottom: 0; right: 0;">
-                                    <a href="/buy/{{ item.id }}" role="button"
-                                        class="btn btn-primary m-2 {% if item.status=='bought' %}disabled{% endif %}" {%
-                                        if item.status=='bought' %} aria-disabled="true" {% endif %}">Buy</a>
-                                </span>
-                            </div>
-                        </div>
+            <div class="card h-100 p-3">
+                <!-- ITEM BRIEF DESCRIPTION -->
+                <div class="row">
+                    <div class="col">
+                        <h3 class="lead">{{ item.name }}</h3>
+                        <span class="text-muted">Posted {{ item.format_date_difference() }}</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h3><strong>${{ item.price }}</strong></h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <!-- ITEM IN DEPTH DESCRIPTION -->
+                        <h3><strong>Description</strong></h3>
+                        <p>{{ item.description }}</p>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card" style="height: 100%;">
+            <div class="card p-3">
                 <!-- BID AND MESSAGE -->
                 <!-- ONLY IMPLEMENTING VENDOR INFO AND BID FUNCTION -->
-                <h1>{{ vendor.username }}</h1>
-                <h4>Rating: {{ vendor.rating }}</h4>
-                <p>({{ vendor.ratings }} reviews)</p>
-                <p>({{ v_sold_count }} items sold)</p>
+                <div class="div d-flex align-items-center">
+                    <img src="{{ url_for('static', filename='img/profile/' + vendor.image_file) }}"
+                        class="rounded-circle" style="height: 40px; width: auto;" alt="">
+                    <h2 class="mx-1 text-primary"><small>@{{ vendor.username }}</small></h2>
+                </div>
+                <h4>
+                    {% if not vendor.rating == "No reviews yet" %}
+                    Rating: {{ vendor.rating }}
+                    {% else %}
+                    {{ vendor.rating }}
+                    {% endif %}
+                </h4>
+                <span class="text-muted">({{ v_sold_count }} items sold)</span>
+                <span class="text-muted">({{ vendor.ratings }} reviews)</span>
+                <div class="col">
+                    {% if not item.user_id == current_user.id %}
+                    <span>
+                        <a href="/buy/{{ item.id }}" role="button" class="btn btn-primary my-2 
+                                        {% if item.status=='bought' %}
+                                        disabled
+                                        {% endif %}" {% if item.status=='bought' %} aria-disabled='true' {% endif
+                            %}>Buy</a>
+                    </span>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
     <div class="row my-1 mx-5 g-3">
         <div class="col-md-12">
-            <div class="card" style="height: 100%;">
+            <div class="card h-100 p-3" style="height: 100%;">
                 <!-- VENDOR REVIEWS -->
-                <h1>Vendor Reviews</h1>
+                <h3><strong>Vendor Reviews</strong></h3>
                 {% if reviews %}
                 {% for review in reviews %}
                 {{ render_review(review) }}
                 {% endfor %}
                 {% else %}
-                <p>No reviews yet</p>
+                <p class="text-muted">No reviews yet</p>
                 {% endif %}
             </div>
         </div>
     </div>
     <div class="row my-3 mx-5">
         <div class="col-md-12 p-2">
-            <div class="card">
+            <div class="card p-3">
                 <!-- SIMILAR ITEMS -->
                 {{ reccommended_items(r_items, current_user) }}
             </div>

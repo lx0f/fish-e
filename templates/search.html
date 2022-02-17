@@ -8,35 +8,60 @@
 <div class="container">
     <h3><strong>Search Results for '<span class="text-primary">{{ search }}</span>'</strong> </h3>
     <div class="row">
-        <div class="col-md-6">
+    </div>
+    <div class="row">
+        <div class="col-md-2">
             <!-- CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilities"] -->
-            <h5><strong>Filter by</strong></h5>
-            <ul class="list-inline">
-                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/All"
-                        class="btn btn-sm btn-primary m-0">All</a></li>
-                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/Fish"
-                        class="btn btn-sm btn-primary m-0">Fish</a></li>
-                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/Food"
-                        class="btn btn-sm btn-primary m-0">Food</a></li>
-                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/Tank"
-                        class="btn btn-sm btn-primary m-0">Tank</a></li>
-                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/Decoration"
-                        class="btn btn-sm btn-primary m-0">Decoration</a></li>
-                <li class="list-inline-item"><a href="/search/{{ search }}/{{ item_ids }}/Utilities"
-                        class="btn btn-sm btn-primary m-0">Utilities</a></li>
-            </ul>
+            <h4><strong>Filter by</strong></h4>
+            <div>
+                <h5 class="text-muted">Category</h5>
+                <div>
+                    <!-- href="/search/{{ search }}/{{ item_ids }}/All" -->
+                    <!-- href="/search/{{ search }}/{{ item_ids }}/Fish" -->
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="check-all"><label class="form-check-label"
+                            for="check-all">All</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="check-fish"><label class="form-check-label"
+                            for="check-fish">Fish</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="check-food"><label class="form-check-label"
+                            for="check-food">Food</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="check-tank"><label class="form-check-label"
+                            for="check-tank">Tank</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="check-decoration"><label
+                            class="form-check-label" for="check-decoration">Decoration</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="check-utilities"><label
+                            class="form-check-label" for="check-utilities">Utilities</label>
+                    </div>
+                </div>
+                <h5 class="text-muted">Price</h5>
+                <div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-md-10">
+            <div class="row">
+                <h5><strong>Items</strong><small>({{ count_of_items }})</small></h5>
+                {% for item in items %}
+                <div class="col-md-3">
+                    {{ item_card(item, current_user) }}
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
-    <h5><strong>Items</strong><small>({{ count_of_items }})</small></h5>
     <div class="row">
-        {% for item in items %}
-        <div class="col-md-3">
-            {{ item_card(item, current_user) }}
-        </div>
-        {% endfor %}
-    </div>
-    <h5><strong>Users</strong><small>({{ count_of_users }})</small></h5>
-    <div class="row">
+        <h5><strong>Users</strong><small>({{ count_of_users }})</small></h5>
         {% for user in users %}
         <div class="col-md-12">
             {{ user_profile(user, current_user) }}
