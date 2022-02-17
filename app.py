@@ -1,4 +1,5 @@
 # @redears-lambda TODO: create dummy items, transactions, and likes
+from cProfile import label
 import json
 from datetime import datetime
 from uuid import uuid4
@@ -36,8 +37,17 @@ from wtforms import (
     StringField,
     SubmitField,
     TextAreaField,
+    SelectMultipleField,
+    HiddenField,
+    widgets,
 )
-from wtforms.validators import DataRequired, Length, ValidationError, NumberRange
+from wtforms.validators import (
+    DataRequired,
+    Length,
+    ValidationError,
+    NumberRange,
+    Optional,
+)
 
 
 ######## APP INIT ########
@@ -128,6 +138,17 @@ class User(db.Model, UserMixin):
             average = total / len(self.reviewed)
             return "{:.1f}".format(average)
         return "No reviews yet"
+
+    @property
+    def rating_int(self):
+        total = 0
+        reviews = self.reviewed
+        if reviews:
+            for review in reviews:
+                total = +review.rating
+            average = total / len(self.reviewed)
+            return average
+        return 0
 
     def __repr__(self):
         return f"User(username='{self.username}',email='{self.email}',image_file='{self.image_file}')"
@@ -411,6 +432,29 @@ class ResetPasswordForm(FlaskForm):
         ],
     )
     submit = SubmitField("Reset")
+
+
+class MultiCheckBoxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
+
+class SearchFilterForm(FlaskForm):
+
+    # category
+    CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilties"]
+    item_ids = HiddenField()
+    categories = MultiCheckBoxField(choices=CATEGORIES, validators=[Optional()])
+    # price
+    price_min = IntegerField(label="Min", validators=[Optional()])
+    price_max = IntegerField(label="Max", validators=[Optional()])
+    # likes
+    likes_min = IntegerField(label="Min", validators=[Optional()])
+    likes_max = IntegerField(label="Max", validators=[Optional()])
+    # vendor rating
+    rating_min = IntegerField(label="Min", validators=[Optional()])
+    rating_max = IntegerField(label="Max", validators=[Optional()])
+    submit = SubmitField("Filter")
 
 
 ######## ROUTES ########
@@ -724,7 +768,7 @@ def render_review(transaction_id):
     return render_template("review.html", form=form, search_form=search_form)
 
 
-@app.route("/search")
+@app.route("/search", methods=["GET", "POST"])
 def render_search():
     search_form = SearchForm()
     search = request.args.get("search")
@@ -733,16 +777,68 @@ def render_search():
     users = [user for user in users if user != current_user]
     count_of_items = len(list(items))
     count_of_users = len(list(users))
-    item_ids = "-".join([str(item.id) for item in items])
+    item_ids = [item.id for item in items]
+    filter_form = SearchFilterForm(item_ids=item_ids)
+
+    if filter_form.validate_on_submit():
+        categories = filter_form.categories.data
+        price_min = filter_form.price_min.data
+        price_max = filter_form.price_max.data
+        likes_min = filter_form.likes_min.data
+        likes_max = filter_form.likes_max.data
+        rating_min = filter_form.rating_min.data
+        rating_max = filter_form.rating_max.data
+        item_ids = filter_form.item_ids.data
+
+        items = [Item.query.filter_by(id=id).first() for id in item_ids]
+        if categories:
+            items = [item for item in items if item.category in categories]
+        if price_min:
+            items = [item for item in items if item.base_price >= price_min]
+        if price_max:
+            items = [item for item in items if item.base_price <= price_max]
+        if likes_min:
+            items = [item for item in items if len(item.likes) >= likes_min]
+        if likes_max:
+            items = [item for item in items if len(item.likes) <= likes_max]
+        if rating_min:
+            users = [user for user in users if user.rating_int >= rating_min]
+            items = [
+                item
+                for item in items
+                if User.query.filter_by(item.user_id).first().rating_int >= rating_min
+            ]
+        if rating_max:
+            users = [user for user in users if user.rating_int <= rating_max]
+            items = [
+                item
+                for item in items
+                if User.query.filter_by(item.user_id).first().rating_int <= rating_max
+            ]
+
+        count_of_items = len(list(items))
+        count_of_users = len(list(users))
+
+        return render_template(
+            "search.html",
+            users=users,
+            search_form=search_form,
+            filter_form=filter_form,
+            items=items,
+            search=search,
+            count_of_items=count_of_items,
+            count_of_users=count_of_users
+        )
+
     return render_template(
         "search.html",
         users=users,
         search_form=search_form,
+        filter_form=filter_form,
         items=items,
         search=search,
         count_of_items=count_of_items,
         count_of_users=count_of_users,
-        item_ids=item_ids,
     )
 
 

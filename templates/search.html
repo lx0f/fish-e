@@ -1,3 +1,4 @@
+{% from 'bootstrap5/form.html' import render_form_row, render_field %}
 {% from 'macros/navbar.html' import navbar %}
 {% from 'macros/user_profile.html' import user_profile %}
 {% from 'macros/item_card.html' import item_card %}
@@ -14,39 +15,18 @@
             <!-- CATEGORIES = ["Fish", "Food", "Tank", "Decoration", "Utilities"] -->
             <h4><strong>Filter by</strong></h4>
             <div>
-                <h5 class="text-muted">Category</h5>
-                <div>
-                    <!-- href="/search/{{ search }}/{{ item_ids }}/All" -->
-                    <!-- href="/search/{{ search }}/{{ item_ids }}/Fish" -->
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="check-all"><label class="form-check-label"
-                            for="check-all">All</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="check-fish"><label class="form-check-label"
-                            for="check-fish">Fish</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="check-food"><label class="form-check-label"
-                            for="check-food">Food</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="check-tank"><label class="form-check-label"
-                            for="check-tank">Tank</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="check-decoration"><label
-                            class="form-check-label" for="check-decoration">Decoration</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="check-utilities"><label
-                            class="form-check-label" for="check-utilities">Utilities</label>
-                    </div>
-                </div>
-                <h5 class="text-muted">Price</h5>
-                <div>
-
-                </div>
+                <form method="post">
+                    {{ filter_form.csrf_token() }}
+                    <h5 class="text-muted">Category</h5>
+                    {{ filter_form.categories(style_="list-style-type: none;", class_="form-check p-0") }}
+                    <h5 class="text-muted">Price</h5>
+                    {{ render_form_row([filter_form.price_min, filter_form.price_max]) }}
+                    <h5 class="text-muted">Likes</h5>
+                    {{ render_form_row([filter_form.likes_min, filter_form.likes_max]) }}
+                    <h5 class="text-muted">Rating</h5>
+                    {{ render_form_row([filter_form.rating_min, filter_form.rating_max]) }}
+                    {{ render_field(filter_form.submit) }}
+                </form>
             </div>
         </div>
         <div class="col-md-10">
@@ -58,15 +38,15 @@
                 </div>
                 {% endfor %}
             </div>
+            <div class="row">
+                <h5><strong>Users</strong><small>({{ count_of_users }})</small></h5>
+                {% for user in users %}
+                <div class="col-md-12">
+                    {{ user_profile(user, current_user) }}
+                </div>
+                {% endfor %}
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <h5><strong>Users</strong><small>({{ count_of_users }})</small></h5>
-        {% for user in users %}
-        <div class="col-md-12">
-            {{ user_profile(user, current_user) }}
-        </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock content %}
