@@ -1,6 +1,6 @@
 {% macro item_card(item, current_user) %}
 <style>
-    
+
 </style>
 
 <div class="card">
@@ -20,12 +20,15 @@
         <a href="/item/{{ item.id }}" class="btn btn-primary mx-0">Details</a>
         {% if current_user.is_authenticated %}
         {% if not current_user.has_liked_item(item) %}
-        <a href="{{ url_for('like_action', item_id=item.id, action='like') }}" class="btn btn-primary">Like</a>
+        <a href="{{ url_for('like_action', item_id=item.id, action='like') }}" class="btn btn-primary">Like
+            <span class="badge fbg-secondary">{{ item.like_count }}</span></a>
         {% else %}
-        <a href="{{ url_for('like_action', item_id=item.id, action='unlike') }}" class="btn btn-primary">Unlike</a>
+        <a href="{{ url_for('like_action', item_id=item.id, action='unlike') }}" class="btn btn-primary">Unlike
+            <span class="badge fbg-secondary">{{ item.like_count }}</span></a>
         {% endif %}
         {% else %}
-        <a href="{{ url_for('like_action', item_id=item.id, action='like') }}" class="btn btn-primary">Like</a>
+        <a href="{{ url_for('like_action', item_id=item.id, action='like') }}" class="btn btn-primary">Like
+            <span class="badge fbg-secondary">{{ item.like_count }}</span></a>
         {% endif %}
     </div>
 </div>

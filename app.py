@@ -222,6 +222,10 @@ class Item(db.Model):
     def price(self):
         return "{:.2f}".format(self.base_price)
 
+    @property
+    def like_count(self):
+        return len(self.likes)
+
     def __repr__(self):
         return f"Item(name='{self.name}',date_posted='{self.date_posted}',image_file='{self.image_file}')"
 
