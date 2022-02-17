@@ -71,23 +71,25 @@
                             <strong>About Me</strong>
                             {% if user.description != None %}
                             <br>
-                            {% if user.description %}
-                            <small>{{ user.description }}</small>
-                            <br>
+                            {{ user.description }}
+
                             {% if user == current_user %}
-                            <a href="" data-bs-toggle="modal"
-                                data-bs-target="#descriptionModal"><small>change</small></a>
+                            <br>
+                            <a href="" data-bs-toggle="modal" data-bs-target="#descriptionModal"><small>change
+                                </small></a>
+                            {% else %}
+
                             {% endif %}
+
                             {% else %}
                             {% if user == current_user %}
-                            <a href="" data-bs-toggle="modal" data-bs-target="#descriptionModal"><small>add about
-                                    me</small></a>
-                            {% endif %}
-                            {% endif %}
+                            <br>
+                            <a href="" data-bs-toggle="modal" data-bs-target="#descriptionModal"><small>add
+                                    description</small></a>
                             {% else %}
                             <br>
-                            <a href="" data-bs-toggle="modal" data-bs-target="#descriptionModal"><small>add about
-                                    me</small></a>
+                            <span class="text-muted">No description</span>
+                            {% endif %}
                             {% endif %}
                         </div>
                     </div>
